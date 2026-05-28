@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="color-scheme" content="dark light" />
+<title>NVIDIA-ZPPO · Zone of Proximal Policy Optimization</title>
+
+<!-- SEO / preview meta -->
+<meta name="description" content="NVIDIA-ZPPO · Zone of Proximal Policy Optimization — Teacher in Prompts, Not Gradients." />
+<meta name="keywords" content="NVIDIA, ZPPO, GRPO, RLHF, distillation, knowledge distillation, BCQ, NCQ, vision-language model, VLM, Qwen3.5, prompt replay buffer, zone of proximal development" />
+<meta name="author" content="Byung-Kwan Lee, NVIDIA" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content="NVIDIA Research" />
+<meta property="og:title" content="NVIDIA-ZPPO" />
+<meta property="og:description" content="NVIDIA-ZPPO · Zone of Proximal Policy Optimization — Teacher in Prompts, Not Gradients." />
+<meta property="og:image" content="assets/og-thumbnail.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<!-- Twitter card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="NVIDIA-ZPPO" />
+<meta name="twitter:description" content="NVIDIA-ZPPO · Zone of Proximal Policy Optimization — Teacher in Prompts, Not Gradients." />
+<meta name="twitter:image" content="assets/og-thumbnail.png" />
+
+<!-- Favicon: NVIDIA -->
+<link rel="icon" type="image/x-icon" href="https://www.nvidia.com/favicon.ico" />
+<link rel="shortcut icon" type="image/x-icon" href="https://www.nvidia.com/favicon.ico" />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,800;1,9..144,500;1,9..144,700;1,9..144,800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="styles.css" />
+<script>
+  // Prevent FOUC for theme: default is dark, but honor user preference if previously toggled
+  (function(){
+    try {
+      var pref = localStorage.getItem('zppo-theme');
+      if (pref === 'light' || pref === 'dark') {
+        document.documentElement.setAttribute('data-theme', pref);
+      }
+    } catch(e){}
+  })();
+</script>
+</head>
+<body>
+
+<!-- ====== Top navbar ====== -->
+<header class="nav" id="topnav">
+  <div class="nav__inner">
+    <a class="nav__brand" href="#top" aria-label="NVIDIA">
+      <svg class="nav__logo" viewBox="200 560 2160 320" role="img" aria-label="NVIDIA" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#76b900" d="M436.93785,640.78361v-35.49175c3.4459-.24553,6.92613-.42918,10.4726-.54024,97.07249-3.05104,160.75618,83.40761,160.75618,83.40761,0,0-68.78225,95.53503-142.53101,95.53503-10.62215,0-20.12751-1.71234-28.69777-4.58826v-107.62396c37.79122,4.56486,45.3879,21.25692,68.11388,59.12728l50.52954-42.60379s-36.88389-48.37696-99.0625-48.37696c-6.76609,0-13.23133.47815-19.58092,1.15504M436.93785,523.54106v53.0144c3.48438-.27548,6.97313-.49739,10.4726-.62333,134.99401-4.54781,222.93894,110.70911,222.93894,110.70911,0,0-101.01819,122.83652-206.25515,122.83652-9.64223,0-18.67162-.89028-27.15639-2.39142v32.76954c7.25714.92242,14.77052,1.46463,22.61492,1.46463,97.93719,0,168.75864-50.01037,237.34237-109.20595,11.3631,9.10406,57.91698,31.25152,67.49078,40.95975-65.2126,54.58595-217.17638,98.58388-303.32785,98.58388-8.30134,0-16.28653-.50177-24.12021-1.25321v46.05397h372.23407v-392.91789h-372.23407ZM436.93785,779.10599v27.98036c-90.57969-16.14985-115.72071-110.3077-115.72071-110.3077,0,0,43.48994-48.18696,115.72071-55.99504v30.69842c-.05553,0-.09183-.01487-.14102-.01487-37.90229-4.55218-67.51832,30.86283-67.51832,30.86283,0,0,16.59175,59.61825,67.65934,76.776M276.05771,692.6985s53.68509-79.21639,160.88014-87.40665v-28.7364c-118.72891,9.52895-221.54711,110.08578-221.54711,110.08578,0,0,58.23072,168.35047,221.54711,183.76373v-30.54909c-119.84569-15.0781-160.88014-147.15739-160.88014-147.15739Z"/>
+        <path fill="currentColor" d="M1479.66576,597.78723l.02592,257.90666h72.83585v-257.90223l-72.86177-.00443ZM906.67774,597.43677v258.25712h73.48583v-196.09803l56.92818.01949c18.8585,0,32.28898,4.69251,41.37629,14.3888,11.5213,12.27737,16.22358,32.06825,16.22358,68.28803v113.4017l71.18818-.01297.01297-142.67253c0-101.83834-64.91535-115.57162-128.42042-115.57162h-130.7946M1596.94459,597.79587v257.89802h118.13971c62.94459,0,83.48829-10.46877,105.70657-33.93954,15.70652-16.47653,25.85275-52.64668,25.85275-92.1744,0-36.24991-8.58863-68.59087-23.57472-88.73-26.98413-36.0142-65.86086-43.05408-123.8987-43.05408h-102.22561ZM1669.19603,653.95164h31.31755c45.4339,0,74.81747,20.40298,74.81747,73.34165,0,52.95174-29.38356,73.35472-74.81747,73.35472h-31.31755v-146.69636ZM1374.64705,597.79587l-60.78862,204.3991-58.24896-204.38603-78.62696-.01307,83.18745,257.89802h104.97972l83.84098-257.89802h-74.3436ZM1880.53784,855.69389h72.84869v-257.88495l-72.86597-.01307.01728,257.89802ZM2084.72543,597.88892l-101.70877,257.71614h71.82122l16.09133-45.55054h120.36811l15.23266,45.55054h77.97807l-102.48525-257.73763-97.29737.02149ZM2132.0067,644.90644l44.12286,120.73556h-89.63895l45.51609-120.73556Z"/>
+      </svg>
+    </a>
+    <nav class="nav__links" aria-label="Section nav">
+      <a href="#tldr">TL;DR</a>
+      <a href="#method">Method</a>
+      <a href="#highlight">Highlight</a>
+      <a href="#results">Results</a>
+      <a href="#qualitative">Qualitative</a>
+    </nav>
+    <button class="nav__toggle" id="themeToggle" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.5" y1="4.5" x2="6.6" y2="6.6"/><line x1="17.4" y1="17.4" x2="19.5" y2="19.5"/><line x1="4.5" y1="19.5" x2="6.6" y2="17.4"/><line x1="17.4" y1="6.6" x2="19.5" y2="4.5"/></g></svg>
+    </button>
+  </div>
+  <div class="nav__progress" id="navProgress"></div>
+</header>
+
+<!-- ====== Hero ====== -->
+<main id="top">
+<section class="hero">
+  <div class="hero__bg" aria-hidden="true">
+    <div class="hero__grid"></div>
+    <div class="hero__glow hero__glow--a"></div>
+    <div class="hero__glow hero__glow--b"></div>
+  </div>
+
+  <div class="hero__inner">
+    <h1 class="hero__title">
+      <span class="hero__zppo" aria-label="Zone of Proximal Policy Optimization">
+        <span class="zppo-letter">Z</span><span class="zppo-letter">P</span><span class="zppo-letter">P</span><span class="zppo-letter">O</span>
+      </span>
+      <span class="hero__full">
+        <span class="hero__full-word"><span class="hero__full-cap">Z</span>one</span>
+        <span class="hero__full-of">of</span>
+        <span class="hero__full-word"><span class="hero__full-cap">P</span>roximal</span>
+        <span class="hero__full-word"><span class="hero__full-cap">P</span>olicy</span>
+        <span class="hero__full-word"><span class="hero__full-cap">O</span>ptimization</span>
+      </span>
+    </h1>
+
+    <h2 class="hero__sub">
+      <span class="emoji-wrap" aria-hidden="true">
+        <svg class="teacher-mascot" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="tmBody" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#d4dae3"/>
+            </linearGradient>
+            <radialGradient id="tmFace" cx="50%" cy="42%" r="62%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#c5ccd8"/>
+            </radialGradient>
+            <linearGradient id="tmCap" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="#9bdc28"/>
+              <stop offset="55%"  stop-color="#76B900"/>
+              <stop offset="100%" stop-color="#4a7800"/>
+            </linearGradient>
+            <linearGradient id="tmBook" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3a5b9b"/>
+              <stop offset="100%" stop-color="#1a3060"/>
+            </linearGradient>
+          </defs>
+
+          <!-- ground glow (under feet) -->
+          <ellipse cx="40" cy="81" rx="25" ry="2.2" fill="rgba(118,185,0,0.32)"/>
+
+          <!-- ============ CUTE FEET ============ -->
+          <!-- left foot (oval shoe) -->
+          <ellipse cx="30" cy="76" rx="5.4" ry="2.4" fill="url(#tmBody)" stroke="#2a2f38" stroke-width="1.2"/>
+          <!-- left foot green toe-stripe -->
+          <path d="M25.2 75.4 Q30 74.4 34.8 75.4" stroke="#76B900" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+          <!-- right foot (oval shoe) -->
+          <ellipse cx="50" cy="76" rx="5.4" ry="2.4" fill="url(#tmBody)" stroke="#2a2f38" stroke-width="1.2"/>
+          <!-- right foot green toe-stripe -->
+          <path d="M45.2 75.4 Q50 74.4 54.8 75.4" stroke="#76B900" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+
+          <!-- body -->
+          <path d="M22 56 Q22 49 30 49 L50 49 Q58 49 58 56 L58 74 L22 74 Z"
+                fill="url(#tmBody)" stroke="#2a2f38" stroke-width="1.6" stroke-linejoin="round"/>
+          <!-- chest LED -->
+          <circle cx="40" cy="59" r="2.4" fill="#76B900"/>
+          <circle cx="40" cy="59" r="1.0" fill="#ffffff" opacity="0.9"/>
+
+          <!-- left arm reaching out to grip laptop right edge -->
+          <path d="M22 56 Q24 60 25 65" fill="none" stroke="#2a2f38" stroke-width="2" stroke-linecap="round"/>
+          <!-- right arm raised, gripping pointer -->
+          <path d="M58 55 Q60 52 62 50" fill="none" stroke="#2a2f38" stroke-width="2.2" stroke-linecap="round"/>
+
+          <!-- ============ POINTER STICK (지시봉) ============ -->
+          <!-- soft green glow trailing from tip (what teacher is pointing at) -->
+          <circle cx="80" cy="14" r="4.5" fill="rgba(118,185,0,0.35)"/>
+          <circle cx="80" cy="14" r="2.4" fill="rgba(155,220,40,0.55)"/>
+          <!-- wooden shaft -->
+          <line x1="60" y1="53" x2="80" y2="14"
+                stroke="#a87142" stroke-width="3.4" stroke-linecap="round"/>
+          <!-- wood grain highlight -->
+          <line x1="60" y1="53" x2="80" y2="14"
+                stroke="rgba(255,238,210,0.45)" stroke-width="0.9" stroke-linecap="round"/>
+          <!-- darker wood underside -->
+          <line x1="60.8" y1="54" x2="80.5" y2="14.7"
+                stroke="rgba(60,30,10,0.35)" stroke-width="0.8" stroke-linecap="round"/>
+          <!-- silver metal ferrule near tip -->
+          <line x1="76" y1="21.5" x2="79.5" y2="14.5"
+                stroke="#cfd6e0" stroke-width="3.8" stroke-linecap="round"/>
+          <line x1="76.3" y1="21.7" x2="79.2" y2="15"
+                stroke="rgba(255,255,255,0.55)" stroke-width="0.7" stroke-linecap="round"/>
+          <!-- pointed black tip cap -->
+          <circle cx="80.2" cy="13.6" r="1.9" fill="#1a1f28" stroke="#000" stroke-width="0.3"/>
+          <!-- tip sparkle -->
+          <circle cx="79.6" cy="13" r="0.55" fill="#ffffff"/>
+          <!-- black rubber grip at hand -->
+          <line x1="58" y1="56" x2="64" y2="44.5"
+                stroke="#101218" stroke-width="4.6" stroke-linecap="round"/>
+          <line x1="59" y1="54.5" x2="63" y2="47"
+                stroke="rgba(255,255,255,0.18)" stroke-width="0.5" stroke-linecap="round"/>
+
+          <!-- ============ LAPTOP (held in left hand, enlarged) ============ -->
+          <!-- soft green glow under laptop -->
+          <ellipse cx="15" cy="74" rx="20" ry="2.4" fill="rgba(118,185,0,0.32)"/>
+          <!-- screen back / bezel -->
+          <rect x="-3" y="44" width="28" height="20" rx="1.6"
+                fill="#1a1f28" stroke="#0a0d12" stroke-width="0.9"/>
+          <!-- inner display area -->
+          <rect x="-1.4" y="45.5" width="24.8" height="16.4" rx="0.7"
+                fill="#06090f"/>
+          <!-- top status bar -->
+          <rect x="-1.4" y="45.5" width="24.8" height="1.9" fill="#0e1218"/>
+          <circle cx="0.4" cy="46.5" r="0.45" fill="#ff5f57"/>
+          <circle cx="2.0" cy="46.5" r="0.45" fill="#febc2e"/>
+          <circle cx="3.6" cy="46.5" r="0.45" fill="#28c840"/>
+          <!-- code-like glowing lines on screen -->
+          <rect x="0.6" y="49.4" width="3.4" height="1.1" fill="#9bdc28" opacity="0.95"/>
+          <rect x="4.8" y="49.4" width="9.0" height="1.1" fill="#76B900" opacity="0.75"/>
+          <rect x="0.6" y="51.7" width="15.0" height="1.1" fill="#cdebb1" opacity="0.55"/>
+          <rect x="0.6" y="54.0" width="4.8" height="1.1" fill="#9bdc28" opacity="0.95"/>
+          <rect x="6.2" y="54.0" width="8.0" height="1.1" fill="#76B900" opacity="0.75"/>
+          <rect x="0.6" y="56.3" width="11.0" height="1.1" fill="#cdebb1" opacity="0.55"/>
+          <rect x="0.6" y="58.6" width="3.4" height="1.1" fill="#9bdc28" opacity="0.95"/>
+          <rect x="4.8" y="58.6" width="6.4" height="1.1" fill="#76B900" opacity="0.75"/>
+          <rect x="0.6" y="60.9" width="8.0" height="0.9" fill="#cdebb1" opacity="0.55"/>
+          <!-- subtle screen scanline shine -->
+          <rect x="-1.4" y="45.5" width="24.8" height="3.8" rx="0.7" fill="rgba(255,255,255,0.045)"/>
+          <!-- keyboard base (trapezoid for perspective) -->
+          <path d="M-5 64 L27 64 L30 72 L-8 72 Z"
+                fill="url(#tmBody)" stroke="#2a2f38" stroke-width="1.0" stroke-linejoin="round"/>
+          <!-- hinge stripe -->
+          <rect x="-3" y="64" width="28" height="1.1" fill="#2a2f38"/>
+          <!-- trackpad -->
+          <rect x="8" y="68" width="8" height="2.0" rx="0.5" fill="rgba(0,0,0,0.32)" stroke="rgba(0,0,0,0.45)" stroke-width="0.35"/>
+          <!-- tiny keyboard key hints -->
+          <circle cx="-1.6" cy="67.2" r="0.4" fill="rgba(0,0,0,0.28)"/>
+          <circle cx="0.4" cy="67.2" r="0.4" fill="rgba(0,0,0,0.28)"/>
+          <circle cx="2.4" cy="67.2" r="0.4" fill="rgba(0,0,0,0.28)"/>
+          <circle cx="4.4" cy="67.2" r="0.4" fill="rgba(0,0,0,0.28)"/>
+          <circle cx="19.4" cy="67.2" r="0.4" fill="rgba(0,0,0,0.28)"/>
+          <circle cx="21.4" cy="67.2" r="0.4" fill="rgba(0,0,0,0.28)"/>
+          <circle cx="23.4" cy="67.2" r="0.4" fill="rgba(0,0,0,0.28)"/>
+          <!-- left hand gripping laptop right edge -->
+          <circle cx="26.5" cy="67" r="3.0" fill="url(#tmFace)" stroke="#2a2f38" stroke-width="1.3"/>
+          <path d="M24.5 66.5 Q26.5 68.8 28.5 66.5" stroke="#2a2f38" stroke-width="0.6" fill="none" opacity="0.6"/>
+
+          <!-- neck collar -->
+          <rect x="35" y="46" width="10" height="5" rx="1.5" fill="#9ea7b5" stroke="#2a2f38" stroke-width="0.8"/>
+
+          <!-- head -->
+          <rect x="14" y="20" width="52" height="31" rx="14"
+                fill="url(#tmFace)" stroke="#2a2f38" stroke-width="1.8"/>
+
+          <!-- round glasses (teacher signal) -->
+          <circle cx="29" cy="36" r="6.4" fill="rgba(255,255,255,0.55)" stroke="#1a1f28" stroke-width="1.8"/>
+          <circle cx="51" cy="36" r="6.4" fill="rgba(255,255,255,0.55)" stroke="#1a1f28" stroke-width="1.8"/>
+          <line x1="35.4" y1="36" x2="44.6" y2="36" stroke="#1a1f28" stroke-width="1.8"/>
+          <!-- eyes behind lenses -->
+          <circle cx="29" cy="36" r="2.5" fill="#1a1f28"/>
+          <circle cx="51" cy="36" r="2.5" fill="#1a1f28"/>
+          <circle cx="30.3" cy="34.7" r="1.0" fill="#ffffff"/>
+          <circle cx="52.3" cy="34.7" r="1.0" fill="#ffffff"/>
+
+          <!-- smile -->
+          <path d="M32 44.5 Q40 48.5 48 44.5" stroke="#1a1f28" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+
+          <!-- antenna with green LED -->
+          <path d="M40 20 L40 15" stroke="#2a2f38" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="40" cy="13" r="1.7" fill="#76B900">
+            <animate attributeName="fill-opacity" values="1;0.4;1" dur="2.2s" repeatCount="indefinite"/>
+          </circle>
+
+          <!-- ============ MORTARBOARD (NVIDIA branded) ============ -->
+          <!-- band -->
+          <rect x="11" y="17.5" width="58" height="5.5" rx="1.8" fill="url(#tmCap)" stroke="#1f3a00" stroke-width="0.9"/>
+          <rect x="13" y="18.5" width="54" height="1.4" rx="0.6" fill="rgba(255,255,255,0.35)"/>
+          <!-- top diamond -->
+          <path d="M40 3 L73 16 L40 29 L7 16 Z"
+                fill="url(#tmCap)" stroke="#1f3a00" stroke-width="1.4" stroke-linejoin="round"/>
+          <!-- top highlight wedge -->
+          <path d="M40 4 L68 16 L40 13 Z" fill="rgba(255,255,255,0.32)"/>
+          <!-- NVIDIA wordmark on cap (white, embroidered) -->
+          <text x="40" y="22.1"
+                font-family="'Inter', 'Helvetica Neue', 'Arial Black', sans-serif"
+                font-size="4.0"
+                font-weight="900"
+                fill="#ffffff"
+                text-anchor="middle"
+                letter-spacing="0.6"
+                style="paint-order: stroke fill;"
+                stroke="rgba(0,0,0,0.4)"
+                stroke-width="0.2">NVIDIA</text>
+
+        </svg>
+      </span>
+      <span>Teacher in</span>
+      <span class="hero__hl hero__hl--good">Prompts</span>
+      <span class="hero__sub-sep">,</span>
+      <span>Not</span>
+      <span class="hero__hl hero__hl--bad">Gradients</span>
+    </h2>
+
+    <!-- Authors -->
+    <ol class="authors" role="list">
+      <li><a href="https://byungkwanlee.github.io/ByungKwanLee-CV/" target="_blank" rel="noopener">Byung-Kwan Lee</a><sup class="aff" aria-label="Project Lead">&dagger;</sup></li>
+      <li><a href="https://gloriaximinglu.github.io/" target="_blank" rel="noopener">Ximing Lu</a></li>
+      <li><a href="https://shizhediao.github.io/" target="_blank" rel="noopener">Shizhe Diao</a></li>
+      <li><a href="https://nardien.github.io/" target="_blank" rel="noopener">Minki Kang</a></li>
+      <li><a href="https://www.sauravm.com/" target="_blank" rel="noopener">Saurav Muralidharan</a></li>
+      <li class="row-end"><a href="http://karansapra.com/" target="_blank" rel="noopener">Karan Sapra</a></li>
+      <li class="row-break" aria-hidden="true"></li>
+      <li><a href="https://research.nvidia.com/person/andrew-tao" target="_blank" rel="noopener">Andrew Tao</a></li>
+      <li><a href="https://www.pmolchanov.com/" target="_blank" rel="noopener">Pavlo Molchanov</a></li>
+      <li><a href="https://yejinc.github.io/" target="_blank" rel="noopener">Yejin Choi</a></li>
+      <li><a href="http://vllab.ee.ntu.edu.tw/ycwang.html" target="_blank" rel="noopener">Yu-Chiang Frank Wang</a></li>
+      <li><a href="https://ryo-hachiuma.github.io/" target="_blank" rel="noopener">Ryo Hachiuma</a></li>
+    </ol>
+    <div class="affiliation">
+      <div class="affiliation__org">NVIDIA</div>
+      <div class="affiliation__note"><sup>&dagger;</sup>Project Lead</div>
+    </div>
+
+    <!-- CTA buttons -->
+    <div class="hero__cta">
+      <div class="cta-col">
+        <a class="btn btn--ghost btn--paper" href="#" aria-disabled="true" tabindex="-1">
+          <!-- arXiv-style document icon: paper outline + red X -->
+          <svg class="btn__icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path d="M14 3H6.5A2.5 2.5 0 0 0 4 5.5v13A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V9l-6-6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M14 3v5a1 1 0 0 0 1 1h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M8.5 13.5l6 6M14.5 13.5l-6 6" stroke="#B31B1B" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Paper <span class="btn__pill">ArXiv</span>
+        </a>
+      </div>
+      <div class="cta-col">
+      <a class="btn btn--ghost btn--locked btn--code" href="#" aria-disabled="true" tabindex="-1" title="Internal use only — Coming soon to public">
+        <!-- GitHub mark (Octocat) -->
+        <svg class="btn__icon" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true">
+          <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
+        </svg>
+        Code <span class="btn__pill">Internal-Use Only</span>
+      </a>
+        <div class="cta-note">
+          <span class="spark" aria-hidden="true">✨</span>
+          <span class="cta-note__text">Coming soon to public</span>
+          <span class="spark" aria-hidden="true">✨</span>
+        </div>
+      </div>
+      <div class="cta-col">
+      <a class="btn btn--ghost btn--locked btn--models" href="#" aria-disabled="true" tabindex="-1" title="Internal use only — Coming soon to public">
+        <!-- HuggingFace 🤗 mark -->
+        <svg class="btn__icon" viewBox="0 0 100 100" width="20" height="20" aria-hidden="true">
+          <defs>
+            <radialGradient id="hfFace" cx="50%" cy="42%" r="60%">
+              <stop offset="0%" stop-color="#FFE45C"/>
+              <stop offset="100%" stop-color="#FFB200"/>
+            </radialGradient>
+            <linearGradient id="hfHand" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#FFD2A6"/>
+              <stop offset="100%" stop-color="#FFA661"/>
+            </linearGradient>
+          </defs>
+          <!-- hands behind face -->
+          <path d="M16 54c-5 3-7 9-4 14 2 4 7 5 11 3l8-5c2-2 1-5-1-6-3-2-8-4-14-6Z" fill="url(#hfHand)" stroke="#1a1a1a" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M84 54c5 3 7 9 4 14-2 4-7 5-11 3l-8-5c-2-2-1-5 1-6 3-2 8-4 14-6Z" fill="url(#hfHand)" stroke="#1a1a1a" stroke-width="1.6" stroke-linejoin="round"/>
+          <!-- face -->
+          <circle cx="50" cy="50" r="30" fill="url(#hfFace)" stroke="#1a1a1a" stroke-width="1.8"/>
+          <!-- eyes (closed happy arcs) -->
+          <path d="M37 45c2-3 6-3 8 0" fill="none" stroke="#1a1a1a" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M55 45c2-3 6-3 8 0" fill="none" stroke="#1a1a1a" stroke-width="2.6" stroke-linecap="round"/>
+          <!-- mouth -->
+          <path d="M36 60c4 7 11 10 14 10s10-3 14-10" fill="#7a3a1a" stroke="#1a1a1a" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M40 62q10 5 20 0" fill="#FF6B6B" stroke="none"/>
+        </svg>
+        Models <span class="btn__pill">Internal-Use Only</span>
+      </a>
+        <div class="cta-note">
+          <span class="spark" aria-hidden="true">✨</span>
+          <span class="cta-note__text">Coming soon to public</span>
+          <span class="spark" aria-hidden="true">✨</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Static teaser bar chart removed — the interactive TL;DR panel below
+         (Train button + per-size deltas) covers the same numbers and lets
+         readers explore every size instead of looking at a frozen figure. -->
+
+  </div>
+</section>
+
+<!-- ====== TL;DR ====== -->
+<section class="section" id="tldr">
+  <div class="section__head section__head--center">
+    <span class="section__kicker section__kicker--xl">TL;DR</span>
+  </div>
+
+  <!-- Static final-performance comparison -->
+  <div class="perf">
+    <header class="perf__head perf__head--center">
+      <h3 class="perf__title">
+        Accuracy Gain (Δ pp) at Qwen3.5
+      </h3>
+
+      <div class="perf__controls">
+        <div class="perf__model-stack">
+          <div class="perf__teacher" aria-label="Qwen3.5 teacher model size">
+            <span class="perf__teacher-label">Teacher Size</span>
+            <span class="perf__teacher-chip" title="Fixed teacher model">27B</span>
+          </div>
+
+          <div class="perf__sizes" role="radiogroup" aria-label="Qwen3.5 model size">
+            <span class="perf__sizes-label">
+              Student Size
+              <span class="perf__sizes-cue" aria-hidden="true">👉</span>
+            </span>
+            <div class="perf__sizes-group">
+              <button class="perf__size is-active" type="button" role="radio" aria-checked="true"  data-size="0.8B">0.8B</button>
+              <button class="perf__size"           type="button" role="radio" aria-checked="false" data-size="2B">2B</button>
+              <button class="perf__size"           type="button" role="radio" aria-checked="false" data-size="4B">4B</button>
+              <button class="perf__size"           type="button" role="radio" aria-checked="false" data-size="9B">9B</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="perf__progress" aria-hidden="true">
+          <span class="perf__progress-label">VLM Training</span>
+          <div class="perf__progress-track">
+            <div class="perf__progress-fill" id="perfProgressFill"></div>
+          </div>
+          <span class="perf__progress-num" id="perfProgressNum">0%</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="perf__table" role="table" aria-label="Final accuracy gain by method and modality">
+      <div class="perf__row perf__row--head" role="row">
+        <span class="perf__method" role="columnheader">Method</span>
+        <span class="perf__cell-head" role="columnheader">
+          <strong>10 LLM Benchmarks</strong>
+        </span>
+        <span class="perf__cell-head" role="columnheader">
+          <strong>16 VLM Benchmarks</strong>
+        </span>
+        <span class="perf__cell-head" role="columnheader">
+          <strong>5 Video Benchmarks</strong>
+        </span>
+      </div>
+
+      <div class="perf__row" data-method="off" role="row">
+        <span class="perf__method" role="rowheader">Off-Policy Distill<sup>†</sup></span>
+        <span class="perf__cell" data-sign="neg" role="cell">
+          <span class="perf__val" data-final="-2.7">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--neg" style="--w:29.0%"></span></span>
+        </span>
+        <span class="perf__cell" data-sign="pos" role="cell">
+          <span class="perf__val" data-final="+0.5">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:5.4%"></span></span>
+        </span>
+        <span class="perf__cell" data-sign="neg" role="cell">
+          <span class="perf__val" data-final="-3.3">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--neg" style="--w:35.5%"></span></span>
+        </span>
+      </div>
+
+      <div class="perf__row" data-method="on" role="row">
+        <span class="perf__method" role="rowheader">On-Policy Distill<sup>†</sup></span>
+        <span class="perf__cell" data-sign="neg" role="cell">
+          <span class="perf__val" data-final="-2.0">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--neg" style="--w:21.5%"></span></span>
+        </span>
+        <span class="perf__cell" data-sign="pos" role="cell">
+          <span class="perf__val" data-final="+1.3">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:14.0%"></span></span>
+        </span>
+        <span class="perf__cell" data-sign="neg" role="cell">
+          <span class="perf__val" data-final="-2.5">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--neg" style="--w:26.9%"></span></span>
+        </span>
+      </div>
+
+      <div class="perf__row" data-method="grpo" role="row">
+        <span class="perf__method" role="rowheader">GRPO<sup>†</sup></span>
+        <span class="perf__cell" data-sign="pos" role="cell">
+          <span class="perf__val" data-final="+3.5">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:37.6%"></span></span>
+        </span>
+        <span class="perf__cell" data-sign="pos" role="cell">
+          <span class="perf__val" data-final="+4.4">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:47.3%"></span></span>
+        </span>
+        <span class="perf__cell" data-sign="pos" role="cell">
+          <span class="perf__val" data-final="+2.2">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:23.7%"></span></span>
+        </span>
+      </div>
+
+      <div class="perf__row perf__row--zppo" data-method="zppo" role="row">
+        <span class="perf__method" role="rowheader"><strong>ZPPO</strong><span class="perf__method-ours">(Ours)</span></span>
+        <span class="perf__cell" data-sign="pos" role="cell">
+          <span class="perf__val" data-final="+7.9">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--zppo" style="--w:84.9%"></span></span>
+        </span>
+        <span class="perf__cell" data-sign="pos" role="cell">
+          <span class="perf__val" data-final="+9.3">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--zppo" style="--w:100%"></span></span>
+        </span>
+        <span class="perf__cell" data-sign="pos" role="cell">
+          <span class="perf__val" data-final="+4.5">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--zppo" style="--w:48.4%"></span></span>
+        </span>
+      </div>
+    </div>
+
+    <p class="perf__foot">
+      Δ (pp) over Original Qwen3.5-<span id="perfFootSize">0.8B</span>
+      <span class="perf__legend"><span class="perf__legend-dagger">†</span> with prompt replay buffer</span>
+    </p>
+  </div>
+
+  <!-- Problem / Solution — temporarily hidden
+  <div class="ps">
+    <div class="ps__card ps__card--problem">
+      <header><span class="ps__tag">Problem</span></header>
+      <p>
+        Distillation forces a small student to imitate a giant teacher's logits—it <strong>memorizes</strong> sharp modes and <strong>degrades</strong> generalization beyond the training corpus.
+        GRPO avoids logits, but on hard questions every rollout fails, the advantage is <strong>zero</strong>, and the question is silently <strong>discarded</strong>.
+      </p>
+    </div>
+
+    <div class="ps__arrow" aria-hidden="true">
+      <svg viewBox="0 0 80 30" width="100%" height="30">
+        <defs>
+          <linearGradient id="arrowGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#76B900" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="#76B900" stop-opacity="1"/>
+          </linearGradient>
+        </defs>
+        <path d="M2 15 L70 15 M62 8 L72 15 L62 22" fill="none" stroke="url(#arrowGrad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="ps__card ps__card--solution">
+      <header><span class="ps__tag ps__tag--good">Solution</span></header>
+      <p>
+        ZPPO keeps the teacher inside the <strong class="hl-good">prompt</strong>, never the gradient.
+        On hard questions, <strong>BCQ</strong> shows the student one correct teacher trace vs. one of its own wrong traces (anonymized, shuffled); <strong>NCQ</strong> shows the student all of its wrong attempts at once.
+        A <strong>prompt replay buffer</strong> keeps re-exposing each hard question until the student <em>graduates</em>—a literal zone of proximal development.
+      </p>
+    </div>
+  </div>
+  -->
+
+
+  <!-- Problem / Research Question / Solution — three short cards that give
+       the headline takeaway its full motivational arc. -->
+  <div class="prs">
+    <div class="prs__card prs__card--problem">
+      <header class="prs__head">
+        <span class="prs__dot" aria-hidden="true"></span>
+        <span class="prs__tag">Problem</span>
+      </header>
+      <ul class="prs__list">
+        <li><strong>Distillation</strong> forces a small student to imitate a giant teacher's logits, and it induces <strong>memorization</strong>, <strong>degrading generalization</strong>.</li>
+        <li>The natural alternative <strong>GRPO</strong> is <strong>single-model</strong> with no slot for a teacher — forcing one in creates an <strong>off-policy mismatch</strong> and <strong>policy drift</strong>, degrading generalization again.</li>
+        <li>And even without the teacher, plain GRPO can't recover a learning signal on <strong>hard questions</strong>: when every student rollout fails, the advantage collapses to <strong>zero</strong> and the question is silently <strong>discarded</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="prs__card prs__card--question">
+      <header class="prs__head">
+        <span class="prs__dot" aria-hidden="true"></span>
+        <span class="prs__tag">Research Question</span>
+      </header>
+      <p>
+        How can we transfer the teacher's knowledge to the student <em>without</em> ever imitating the teacher's <strong>logits</strong> or injecting the teacher's response directly into the student's <strong>policy gradient</strong>?
+      </p>
+    </div>
+
+    <div class="prs__card prs__card--solution">
+      <header class="prs__head">
+        <span class="prs__dot" aria-hidden="true"></span>
+        <span class="prs__tag">Solution</span>
+      </header>
+      <p>
+        Keep the teacher inside the <strong class="hl-good">prompt</strong>, never the gradient — <strong>BCQ</strong> pairs one correct teacher trace with one wrong student trace as anonymised candidates, <strong>NCQ</strong> confronts the student with all of its own wrong rollouts, and a <strong>prompt replay buffer</strong> re-exposes each hard question until the student <em>graduates</em>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== Method ====== -->
+<section class="section" id="method">
+  <div class="section__head">
+    <span class="section__kicker">method</span>
+    <h2 class="section__title">Three components that <em>compound</em>.</h2>
+    <p class="section__lede">
+      BCQ &amp; NCQ recover a learning signal on hard questions; the prompt replay buffer keeps each hard question in the student's zone until it graduates.
+    </p>
+  </div>
+
+  <figure class="figure figure--wide">
+    <img src="assets/figures/figure_high_concept.png" alt="High concept: two RL failure modes and how BCQ/NCQ fix them." loading="lazy"/>
+    <figcaption>
+      <strong>(a)</strong> Two failure modes that motivate ZPPO: small students fit a giant teacher's logits brittlely; injecting a teacher response into the policy gradient breaks on-policy.
+      <strong>(b)</strong> <span class="hl-good-text">BCQ</span> pairs a correct teacher response with a wrong student response as anonymized in-prompt candidates.
+      <strong>(c)</strong> <span class="hl-good-text">NCQ</span> aggregates the student's own wrong rollouts into a single prompt.
+    </figcaption>
+  </figure>
+
+  <figure class="figure figure--wide">
+    <!-- Animated overview of ZPPO. Pure-CSS keyframes drive a single 12s
+         cycle that walks through: (a) hard-question sampling & admission to
+         the replay buffer, (b) BCQ slot formation, (c) NCQ accumulation. -->
+    <div class="zppo-anim" role="img"
+         aria-label="ZPPO method animation: a hard question is sampled, the teacher emits one correct rollout while the student emits one correct and seven wrong rollouts, the question is admitted to the replay buffer, and is reformulated into a BCQ prompt (one teacher-correct + one student-wrong, anonymized) and an NCQ prompt (all student-wrong, no teacher).">
+      <svg class="zppo-anim__svg" viewBox="0 0 1200 460" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <defs>
+          <marker id="zppoArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+          <marker id="zppoArrowPurple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#a780ff"/>
+          </marker>
+        </defs>
+
+        <!-- Panel labels -->
+        <text class="zppo-anim__panel-lbl" x="20"   y="28">(a) Sample &amp; rollouts → admit</text>
+        <text class="zppo-anim__panel-lbl" x="540"  y="28">(b) BCQ</text>
+        <text class="zppo-anim__panel-lbl" x="860"  y="28">(c) NCQ</text>
+
+        <!-- Vertical dividers between panels -->
+        <line class="zppo-anim__divider" x1="520" y1="44" x2="520" y2="436"/>
+        <line class="zppo-anim__divider" x1="840" y1="44" x2="840" y2="436"/>
+
+        <!-- ====== Panel (a) ====== -->
+
+        <!-- Database cylinder (green-ish) -->
+        <g class="zppo-anim__db">
+          <ellipse cx="60" cy="115" rx="34" ry="9"/>
+          <path d="M 26 115 L 26 165 A 34 9 0 0 0 94 165 L 94 115" fill="none"/>
+          <ellipse cx="60" cy="115" rx="34" ry="9" class="zppo-anim__cyl-top"/>
+          <text x="60" y="190" text-anchor="middle">Database</text>
+        </g>
+
+        <!-- Replay Buffer cylinder (purple) -->
+        <g class="zppo-anim__buf">
+          <ellipse cx="60" cy="255" rx="34" ry="9"/>
+          <path d="M 26 255 L 26 305 A 34 9 0 0 0 94 305 L 94 255" fill="none"/>
+          <ellipse cx="60" cy="255" rx="34" ry="9" class="zppo-anim__cyl-top"/>
+          <text x="60" y="330" text-anchor="middle">Replay Buffer</text>
+        </g>
+
+        <!-- Arrows from cylinders into Batch -->
+        <path class="zppo-anim__feed-arrow zppo-anim__feed-arrow--new" d="M 100 140 L 160 175" marker-end="url(#zppoArrow)"/>
+        <path class="zppo-anim__feed-arrow zppo-anim__feed-arrow--replay" d="M 100 270 L 160 245" marker-end="url(#zppoArrow)"/>
+
+        <!-- Batch container -->
+        <g class="zppo-anim__batch">
+          <rect x="160" y="105" width="180" height="200" rx="12"/>
+          <text x="250" y="128" text-anchor="middle" class="zppo-anim__batch-lbl">Batch</text>
+          <rect x="175" y="148" width="150" height="60" rx="8" class="zppo-anim__newq-bg"/>
+          <text x="250" y="183" text-anchor="middle" class="zppo-anim__newq-lbl">New Questions</text>
+          <rect x="175" y="218" width="150" height="60" rx="8" class="zppo-anim__replayq-bg"/>
+          <text x="250" y="253" text-anchor="middle" class="zppo-anim__replayq-lbl">Replayed Questions</text>
+        </g>
+
+        <!-- Card 1: drops from Database into "New Questions".
+             Position is driven by CSS keyframes (translate origin = SVG 0,0). -->
+        <g class="zppo-anim__card zppo-anim__card--new">
+          <rect width="40" height="20" rx="4"/>
+          <text x="20" y="14" text-anchor="middle">Q₁</text>
+        </g>
+        <!-- Card 2: drops from Replay Buffer into "Replayed Questions". -->
+        <g class="zppo-anim__card zppo-anim__card--replay">
+          <rect width="40" height="20" rx="4"/>
+          <text x="20" y="14" text-anchor="middle">Q*</text>
+        </g>
+
+        <!-- Sample arrow + label -->
+        <g class="zppo-anim__sample">
+          <path d="M 345 240 L 410 205" marker-end="url(#zppoArrow)"/>
+          <text x="377" y="220" text-anchor="middle">Sample</text>
+        </g>
+
+        <!-- Sampled question card (moves from Batch → Teacher/Student).
+             Position driven entirely by CSS keyframes. -->
+        <g class="zppo-anim__sample-card">
+          <rect width="40" height="20" rx="4"/>
+          <text x="20" y="14" text-anchor="middle">Q*</text>
+        </g>
+
+        <!-- Branch arrows: sampled question → Teacher (up) and Student (down) -->
+        <path class="zppo-anim__branch zppo-anim__branch--teacher" d="M 410 195 L 405 120" marker-end="url(#zppoArrow)"/>
+        <path class="zppo-anim__branch zppo-anim__branch--student" d="M 410 215 L 405 290" marker-end="url(#zppoArrow)"/>
+
+        <!-- Teacher box -->
+        <g class="zppo-anim__teacher">
+          <rect x="405" y="95" width="80" height="42" rx="9"/>
+          <text x="445" y="121" text-anchor="middle">Teacher</text>
+        </g>
+        <!-- Student box -->
+        <g class="zppo-anim__student">
+          <rect x="405" y="270" width="80" height="42" rx="9"/>
+          <text x="445" y="296" text-anchor="middle">Student</text>
+        </g>
+
+        <!-- Teacher rollout: 1 ✓ -->
+        <g class="zppo-anim__t-roll">
+          <circle cx="497" cy="80" r="11"/>
+          <text x="497" y="84" text-anchor="middle">✓</text>
+        </g>
+
+        <!-- Student rollouts: 8 chips arranged in 2 rows × 4 cols  -->
+        <!-- Row 1 (y=340), Row 2 (y=365). Columns at x = 415, 437, 459, 481.
+             Order chosen so the single ✓ falls in slot #5 (idx 4). -->
+        <g class="zppo-anim__s-roll" style="--i:0"><circle cx="415" cy="340" r="9"/><text x="415" y="344" text-anchor="middle">✗</text></g>
+        <g class="zppo-anim__s-roll" style="--i:1"><circle cx="437" cy="340" r="9"/><text x="437" y="344" text-anchor="middle">✗</text></g>
+        <g class="zppo-anim__s-roll" style="--i:2"><circle cx="459" cy="340" r="9"/><text x="459" y="344" text-anchor="middle">✗</text></g>
+        <g class="zppo-anim__s-roll" style="--i:3"><circle cx="481" cy="340" r="9"/><text x="481" y="344" text-anchor="middle">✗</text></g>
+        <g class="zppo-anim__s-roll zppo-anim__s-roll--ok" style="--i:4"><circle cx="415" cy="365" r="9"/><text x="415" y="369" text-anchor="middle">✓</text></g>
+        <g class="zppo-anim__s-roll" style="--i:5"><circle cx="437" cy="365" r="9"/><text x="437" y="369" text-anchor="middle">✗</text></g>
+        <g class="zppo-anim__s-roll" style="--i:6"><circle cx="459" cy="365" r="9"/><text x="459" y="369" text-anchor="middle">✗</text></g>
+        <g class="zppo-anim__s-roll" style="--i:7"><circle cx="481" cy="365" r="9"/><text x="481" y="369" text-anchor="middle">✗</text></g>
+
+        <!-- Judgment pill: "1 ✓  <  7 ✗  →  admit" -->
+        <g class="zppo-anim__judge">
+          <rect x="180" y="395" width="320" height="32" rx="16"/>
+          <text x="340" y="416" text-anchor="middle"># correct &lt; # wrong  →  <tspan class="zppo-anim__judge-result">admit</tspan></text>
+        </g>
+
+        <!-- Admission arrow: curves from judgment pill back to Replay Buffer -->
+        <path class="zppo-anim__admit-arrow" d="M 200 410 Q 60 410 60 305" marker-end="url(#zppoArrowPurple)"/>
+
+        <!-- ====== Panel (b): BCQ ====== -->
+
+        <text class="zppo-anim__prompt-q"     x="540" y="80">Question: Q*</text>
+        <text class="zppo-anim__prompt-instr" x="540" y="105">Here are two candidate responses.</text>
+        <text class="zppo-anim__prompt-instr" x="540" y="123">One is correct, one is wrong (anonymized).</text>
+
+        <!-- Candidate slot 1 -->
+        <g class="zppo-anim__bcq-slot zppo-anim__bcq-slot--1">
+          <rect x="540" y="145" width="280" height="56" rx="8"/>
+          <text class="zppo-anim__cand-tag" x="552" y="163">&lt;candidate&gt;</text>
+          <text class="zppo-anim__cand-tag" x="552" y="196">&lt;/candidate&gt;</text>
+          <g class="zppo-anim__bcq-fill zppo-anim__bcq-fill--teacher">
+            <rect x="556" y="170" width="248" height="20" rx="4"/>
+            <text x="680" y="184" text-anchor="middle">Teacher correct response</text>
+          </g>
+        </g>
+
+        <!-- Candidate slot 2 -->
+        <g class="zppo-anim__bcq-slot zppo-anim__bcq-slot--2">
+          <rect x="540" y="220" width="280" height="56" rx="8"/>
+          <text class="zppo-anim__cand-tag" x="552" y="238">&lt;candidate&gt;</text>
+          <text class="zppo-anim__cand-tag" x="552" y="271">&lt;/candidate&gt;</text>
+          <g class="zppo-anim__bcq-fill zppo-anim__bcq-fill--student">
+            <rect x="556" y="245" width="248" height="20" rx="4"/>
+            <text x="680" y="259" text-anchor="middle">Student wrong response</text>
+          </g>
+        </g>
+
+        <text class="zppo-anim__assistant" x="540" y="310">Assistant:</text>
+        <rect class="zppo-anim__cursor" x="612" y="298" width="2" height="15"/>
+
+        <!-- ====== Panel (c): NCQ ====== -->
+
+        <text class="zppo-anim__prompt-q"     x="860" y="80">Question: Q*</text>
+        <text class="zppo-anim__prompt-instr" x="860" y="105">All listed answers are WRONG.</text>
+        <text class="zppo-anim__prompt-instr" x="860" y="123">Avoid them; produce a correct answer.</text>
+
+        <!-- Stack of student-wrong candidates -->
+        <g class="zppo-anim__ncq-slot" style="--i:0">
+          <rect x="860" y="145" width="320" height="42" rx="8"/>
+          <text class="zppo-anim__cand-tag" x="872" y="160">&lt;candidate&gt;</text>
+          <text x="1020" y="178" text-anchor="middle">Wrong response · \boxed{X₁}</text>
+        </g>
+        <g class="zppo-anim__ncq-slot" style="--i:1">
+          <rect x="860" y="197" width="320" height="42" rx="8"/>
+          <text class="zppo-anim__cand-tag" x="872" y="212">&lt;candidate&gt;</text>
+          <text x="1020" y="230" text-anchor="middle">Wrong response · \boxed{X₂}</text>
+        </g>
+        <g class="zppo-anim__ncq-slot" style="--i:2">
+          <rect x="860" y="249" width="320" height="42" rx="8"/>
+          <text class="zppo-anim__cand-tag" x="872" y="264">&lt;candidate&gt;</text>
+          <text x="1020" y="282" text-anchor="middle">Wrong response · \boxed{X₃}</text>
+        </g>
+        <text class="zppo-anim__ncq-more" x="1180" y="307" text-anchor="end">… +4 more</text>
+
+        <!-- "ALL WRONG" stamp. Rotation + scale entirely from CSS keyframes
+             so the bounce-in transform stack is unified in one place. -->
+        <g class="zppo-anim__ncq-stamp">
+          <rect x="935" y="200" width="170" height="40" rx="6"/>
+          <text x="1020" y="227" text-anchor="middle">ALL WRONG</text>
+        </g>
+
+        <text class="zppo-anim__assistant" x="860" y="340">Assistant:</text>
+        <rect class="zppo-anim__cursor zppo-anim__cursor--ncq" x="930" y="328" width="2" height="15"/>
+
+      </svg>
+    </div>
+    <figcaption>
+      <strong>Overview of ZPPO.</strong>
+      (a)&nbsp;Hard questions (<span class="math">r̄<sub>x</sub> &lt; 0.5</span>) are admitted to the prompt replay buffer.
+      (b)&nbsp;BCQ pairs one correct teacher response with one wrong student response (anonymized + shuffled).
+      (c)&nbsp;NCQ aggregates the student's own wrong rollouts into a single prompt with an "all wrong" instruction.
+      Every token whose gradient flows back to the student is <em>still student-generated</em>.
+    </figcaption>
+  </figure>
+
+  <!-- Component pills -->
+  <div class="pills">
+    <div class="pill pill--bcq">
+      <div class="pill__num">BCQ</div>
+      <div class="pill__body">
+        <strong>Binary Candidate Question.</strong>
+        Append <em>one teacher-correct</em> + <em>one student-wrong</em> trace, anonymized &amp; shuffled. Student rolls out again — every gradient-counted token is on-policy.
+      </div>
+    </div>
+    <div class="pill pill--ncq">
+      <div class="pill__num">NCQ</div>
+      <div class="pill__body">
+        <strong>Negative Candidate Question.</strong>
+        Append <em>all</em> the student's wrong rollouts at once, with the explicit instruction that none of them is correct.
+      </div>
+    </div>
+    <div class="pill pill--buf">
+      <div class="pill__num">B</div>
+      <div class="pill__body">
+        <strong>Prompt Replay Buffer.</strong>
+        Re-expose each hard question with fresh BCQ/NCQ candidates per visit, until the student <em>graduates</em> (<span class="math">r̄<sub>x</sub> ≥ 0.5</span>) or is FIFO-evicted.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== Highlight ====== -->
+<section class="section" id="highlight">
+  <div class="section__head">
+    <span class="section__kicker">highlight</span>
+    <h2 class="section__title">Inside the <em>Zone</em>.</h2>
+    <p class="section__lede">
+      What ordinary RL discards as zero-gradient, ZPPO turns into the strongest learning signal.
+    </p>
+  </div>
+
+  <figure class="figure">
+    <img src="assets/figures/figure3.png" alt="Cumulative graduate counts for ZPPO vs GRPO+buffer at 2B, by entry rollout accuracy." loading="lazy"/>
+    <figcaption>
+      <strong>The graduation signal lives at the hardest entries.</strong>
+      Cumulative graduate counts (graduated/admitted) of ZPPO vs. GRPO + buffer at 2B by entry rollout accuracy at admission.
+      Where ordinary RL has <em>zero gradient signal</em>, ZPPO graduates <strong>28%</strong> vs. GRPO's <strong>4%</strong>.
+    </figcaption>
+  </figure>
+
+  <figure class="figure">
+    <img src="assets/figures/figure4.png" alt="Batch composition (Easy / BCQ / NCQ) and graduation-vs-eviction across scales." loading="lazy"/>
+    <figcaption>
+      <strong>BCQ thins, NCQ grows, the buffer rotates.</strong>
+      (a)&nbsp;Batch composition over a full run by scale.
+      (b)&nbsp;Cumulative graduation vs. FIFO-eviction. Small scales mostly evict before graduating; large scales graduate before eviction.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- ====== Results ====== -->
+<section class="section" id="results">
+  <div class="section__head">
+    <span class="section__kicker">results</span>
+    <h2 class="section__title">Main results across <em>31 benchmarks</em>.</h2>
+    <p class="section__lede">
+      Select a student scale and a benchmark family. <span class="legend-good">+</span> gains in NVIDIA green, <span class="legend-bad">−</span> drops in red, the <em>average</em> always emphasized.
+    </p>
+  </div>
+
+  <!-- Filter controls -->
+  <div class="results__controls">
+    <div class="ctrl">
+      <span class="ctrl__lbl">Student size</span>
+      <div class="seg" id="sizeSeg" role="tablist" aria-label="Student size">
+        <button class="seg__btn is-active" data-size="0.8B" role="tab" aria-selected="true">0.8B</button>
+        <button class="seg__btn" data-size="2B" role="tab" aria-selected="false">2B</button>
+        <button class="seg__btn" data-size="4B" role="tab" aria-selected="false">4B</button>
+        <button class="seg__btn" data-size="9B" role="tab" aria-selected="false">9B</button>
+      </div>
+    </div>
+    <div class="ctrl">
+      <span class="ctrl__lbl">Benchmark family</span>
+      <div class="seg" id="famSeg" role="tablist" aria-label="Benchmark family">
+        <button class="seg__btn is-active" data-fam="VLM" role="tab" aria-selected="true">16 VLM</button>
+        <button class="seg__btn" data-fam="LLM" role="tab" aria-selected="false">10 LLM</button>
+        <button class="seg__btn" data-fam="Video" role="tab" aria-selected="false">5 Video</button>
+        <button class="seg__btn" data-fam="ALL" role="tab" aria-selected="false">Avg of all 31</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="results__wrap">
+    <div class="results__scroll" role="region" aria-label="Results table (scroll horizontally on small screens)">
+      <table class="results" id="resultsTable">
+        <thead><tr id="resultsHead"></tr></thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+    <p class="results__note">
+      <span>† denotes augmentation with the prompt replay buffer.</span>
+      <span>Δ = ZPPO − strongest non-ZPPO method per column.</span>
+    </p>
+  </div>
+
+  <!-- Hint + Prefix comparison block (smaller, summarized) -->
+  <div class="hintprefix">
+    <h3 class="hintprefix__title">ZPPO vs. <em>Hint</em> and <em>Prefix</em> teacher injection</h3>
+    <div class="hintprefix__grid">
+      <div class="hp-card"><span class="hp-card__name">Base</span><span class="hp-card__val">41.0 · 56.8</span><span class="hp-card__cap">0.8B · 2B (VLM avg)</span></div>
+      <div class="hp-card"><span class="hp-card__name">+GRPO<sup>†</sup></span><span class="hp-card__val">45.4 · 59.2</span></div>
+      <div class="hp-card"><span class="hp-card__name">+Hint</span><span class="hp-card__val">47.2 · 60.4</span></div>
+      <div class="hp-card"><span class="hp-card__name">+Prefix</span><span class="hp-card__val">45.5 · 59.5</span></div>
+      <div class="hp-card hp-card--best"><span class="hp-card__name">+ZPPO</span><span class="hp-card__val"><strong>50.3 · 62.0</strong></span></div>
+    </div>
+    <p class="hintprefix__caption">BCQ alone already beats both Hint and Prefix; the full ZPPO recipe opens the widest gap.</p>
+  </div>
+</section>
+
+<!-- ====== Qualitative ====== -->
+<section class="section" id="qualitative">
+  <div class="section__head">
+    <span class="section__kicker">qualitative</span>
+    <h2 class="section__title">Worked examples: <em>BCQ</em> + <em>NCQ</em> on hard questions.</h2>
+    <p class="section__lede">
+      Real ZPPO-77K questions where the student fails on every plain rollout (<span class="math">r̄<sub>x</sub> = 0</span>), and the BCQ / NCQ reformulated prompts recover a correct answer — except for the 0.8B straws case, where NCQ alone is not enough.
+      <span class="kbd-hint">Use <kbd>←</kbd> <kbd>→</kbd> or swipe.</span>
+    </p>
+  </div>
+
+  <div class="qual" id="qualCarousel" tabindex="0" aria-roledescription="carousel">
+    <button class="qual__nav qual__nav--prev" id="qualPrev" aria-label="Previous example">
+      <svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="qual__nav qual__nav--next" id="qualNext" aria-label="Next example">
+      <svg viewBox="0 0 24 24" width="24" height="24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <div class="qual__track" id="qualTrack" role="list"></div>
+
+    <div class="qual__dots" id="qualDots" role="tablist" aria-label="Carousel pagination"></div>
+  </div>
+</section>
+
+<!-- ====== Footer ====== -->
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand" aria-label="NVIDIA">
+      <svg class="footer__logo" viewBox="200 560 2160 320" role="img" aria-label="NVIDIA" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#76b900" d="M436.93785,640.78361v-35.49175c3.4459-.24553,6.92613-.42918,10.4726-.54024,97.07249-3.05104,160.75618,83.40761,160.75618,83.40761,0,0-68.78225,95.53503-142.53101,95.53503-10.62215,0-20.12751-1.71234-28.69777-4.58826v-107.62396c37.79122,4.56486,45.3879,21.25692,68.11388,59.12728l50.52954-42.60379s-36.88389-48.37696-99.0625-48.37696c-6.76609,0-13.23133.47815-19.58092,1.15504M436.93785,523.54106v53.0144c3.48438-.27548,6.97313-.49739,10.4726-.62333,134.99401-4.54781,222.93894,110.70911,222.93894,110.70911,0,0-101.01819,122.83652-206.25515,122.83652-9.64223,0-18.67162-.89028-27.15639-2.39142v32.76954c7.25714.92242,14.77052,1.46463,22.61492,1.46463,97.93719,0,168.75864-50.01037,237.34237-109.20595,11.3631,9.10406,57.91698,31.25152,67.49078,40.95975-65.2126,54.58595-217.17638,98.58388-303.32785,98.58388-8.30134,0-16.28653-.50177-24.12021-1.25321v46.05397h372.23407v-392.91789h-372.23407ZM436.93785,779.10599v27.98036c-90.57969-16.14985-115.72071-110.3077-115.72071-110.3077,0,0,43.48994-48.18696,115.72071-55.99504v30.69842c-.05553,0-.09183-.01487-.14102-.01487-37.90229-4.55218-67.51832,30.86283-67.51832,30.86283,0,0,16.59175,59.61825,67.65934,76.776M276.05771,692.6985s53.68509-79.21639,160.88014-87.40665v-28.7364c-118.72891,9.52895-221.54711,110.08578-221.54711,110.08578,0,0,58.23072,168.35047,221.54711,183.76373v-30.54909c-119.84569-15.0781-160.88014-147.15739-160.88014-147.15739Z"/>
+        <path fill="currentColor" d="M1479.66576,597.78723l.02592,257.90666h72.83585v-257.90223l-72.86177-.00443ZM906.67774,597.43677v258.25712h73.48583v-196.09803l56.92818.01949c18.8585,0,32.28898,4.69251,41.37629,14.3888,11.5213,12.27737,16.22358,32.06825,16.22358,68.28803v113.4017l71.18818-.01297.01297-142.67253c0-101.83834-64.91535-115.57162-128.42042-115.57162h-130.7946M1596.94459,597.79587v257.89802h118.13971c62.94459,0,83.48829-10.46877,105.70657-33.93954,15.70652-16.47653,25.85275-52.64668,25.85275-92.1744,0-36.24991-8.58863-68.59087-23.57472-88.73-26.98413-36.0142-65.86086-43.05408-123.8987-43.05408h-102.22561ZM1669.19603,653.95164h31.31755c45.4339,0,74.81747,20.40298,74.81747,73.34165,0,52.95174-29.38356,73.35472-74.81747,73.35472h-31.31755v-146.69636ZM1374.64705,597.79587l-60.78862,204.3991-58.24896-204.38603-78.62696-.01307,83.18745,257.89802h104.97972l83.84098-257.89802h-74.3436ZM1880.53784,855.69389h72.84869v-257.88495l-72.86597-.01307.01728,257.89802ZM2084.72543,597.88892l-101.70877,257.71614h71.82122l16.09133-45.55054h120.36811l15.23266,45.55054h77.97807l-102.48525-257.73763-97.29737.02149ZM2132.0067,644.90644l44.12286,120.73556h-89.63895l45.51609-120.73556Z"/>
+      </svg>
+    </div>
+    <div class="footer__meta">
+      <p>© NVIDIA — Research preview. <span class="footer__sep">·</span> Project page by <a href="https://byungkwanlee.github.io/ByungKwanLee-CV/" target="_blank" rel="noopener">Byung-Kwan Lee</a>.</p>
+    </div>
+    <a class="footer__top" href="#top" aria-label="Back to top">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Top
+    </a>
+  </div>
+</footer>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

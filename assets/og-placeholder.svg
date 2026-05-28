@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="ZPPO thumbnail placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0e0a"/>
+      <stop offset="100%" stop-color="#1a2010"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#76B900" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#76B900" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g font-family="Inter, Helvetica, Arial, sans-serif" fill="#76B900" text-anchor="middle">
+    <text x="600" y="200" font-size="80" font-weight="900" letter-spacing="-2">ZPPO</text>
+  </g>
+  <g font-family="Inter, Helvetica, Arial, sans-serif" fill="#eef3e7" text-anchor="middle">
+    <text x="600" y="280" font-size="32" font-weight="700">Zone of Proximal Policy Optimization</text>
+    <text x="600" y="335" font-size="24" opacity="0.85">Teacher in Prompts, Not Gradients</text>
+    <text x="600" y="450" font-size="20" opacity="0.5">[Placeholder — replace assets/og-thumbnail.png with your custom thumbnail]</text>
+  </g>
+  <g fill="#76B900">
+    <rect x="540" y="500" width="120" height="6" rx="3"/>
+  </g>
+</svg>
