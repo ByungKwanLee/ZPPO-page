@@ -7,7 +7,7 @@
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+  font-family: 'Rubik', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
   font-feature-settings: 'cv11', 'ss01', 'ss03', 'cv02';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -276,7 +276,7 @@ html[data-theme="light"] .icon-moon { display: block; }
 .hero__title {
   margin: 0 auto 14px;
   max-width: 1180px;
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-family: 'Rubik', sans-serif;
   letter-spacing: -0.02em;
   line-height: 1.04;
 }
@@ -486,7 +486,7 @@ html[data-theme="light"] .hero__full-cap {
 .hero__sub {
   position: relative;
   margin: 28px auto 24px;
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-family: 'Rubik', sans-serif;
   font-size: clamp(22px, 3.8vw, 40px);
   font-weight: 500;
   display: inline-flex;
@@ -671,9 +671,11 @@ html[data-theme="light"] .hero__hl--bad {
   flex-wrap: wrap;
   gap: 6px 14px;
   justify-content: center;
-  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: clamp(16px, 2vw, 21px);
-  letter-spacing: -0.005em;
+  /* Unified site font (Rubik) — a clean modern sans that stands in for the
+     proprietary NVIDIA Sans across the whole page. */
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(16px, 1.95vw, 21px);
+  letter-spacing: 0.002em;
   position: relative;
 }
 .authors::before {
@@ -728,7 +730,9 @@ html[data-theme="light"] .authors::before {
   align-items: baseline;
   gap: 0;
 }
-.authors li:not(:last-child):not(.row-end):not(.row-break)::after {
+/* Bullet separator between every author except the last; the row wraps
+   naturally and responsively (no forced line break). */
+.authors li:not(:last-child)::after {
   content: "•";
   color: var(--fg);
   opacity: 0.55;
@@ -738,32 +742,9 @@ html[data-theme="light"] .authors::before {
   transform: translateY(-0.05em);
   margin-left: 14px;
 }
-@media (min-width: 720px) {
-  .authors li.row-break {
-    flex-basis: 100%;
-    width: 100%;
-    height: 0;
-    margin: 0;
-    padding: 0;
-    gap: 0;
-  }
-}
-@media (max-width: 719px) {
-  .authors li.row-break { display: none; }
-  .authors li.row-end:not(:last-child)::after {
-    content: "•";
-    color: var(--fg);
-    opacity: 0.55;
-    font-size: 0.75em;
-    font-weight: 700;
-    pointer-events: none;
-    transform: translateY(-0.05em);
-    margin-left: 14px;
-  }
-}
 .authors a {
   color: #e6ede0;
-  font-weight: 500;
+  font-weight: 600;
   position: relative;
   padding: 0 1px;
   background-image: linear-gradient(180deg, transparent calc(100% - 2px), rgba(118,185,0,0) calc(100% - 2px), rgba(118,185,0,0) 100%);
@@ -805,7 +786,7 @@ html[data-theme="light"] .aff {
   color: var(--fg-2);
 }
 .affiliation__org {
-  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 600;
   color: var(--fg);
   font-size: clamp(21px, 2.3vw, 26px);
@@ -815,14 +796,14 @@ html[data-theme="light"] .aff {
 .affiliation__note {
   color: var(--fg);
   font-weight: 600;
-  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: clamp(16px, 1.75vw, 20px);
   letter-spacing: 0;
   line-height: 1.35;
   opacity: 1;
 }
 .affiliation__note sup {
-  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: var(--fg);
   font-weight: 700;
   margin-right: 2px;
@@ -848,7 +829,7 @@ html[data-theme="light"] .aff {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 700;
   font-size: 12.5px;
   letter-spacing: 0.01em;
@@ -1160,7 +1141,7 @@ html[data-theme="light"] .section__kicker--xl {
     0 6px 20px rgba(118,185,0,0.16);
 }
 .section__title {
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-family: 'Rubik', sans-serif;
   font-size: clamp(28px, 4vw, 44px);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -1497,7 +1478,7 @@ html[data-theme="light"] {
   justify-content: center;
 }
 .perf__title {
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-family: 'Rubik', sans-serif;
   font-size: clamp(22px, 2.6vw, 30px);
   font-weight: 700;
   letter-spacing: -0.005em;
@@ -1588,7 +1569,7 @@ html[data-theme="light"] {
   gap: 10px;
 }
 .perf__sizes-label {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.01em;
@@ -1678,7 +1659,7 @@ html[data-theme="light"] .perf__size.is-active {
   /* Match `.perf__sizes-label` exactly so both labels are inline-flex grid
      items with identical metrics — that keeps their left edges (and the
      "T" of "Teacher" / "S" of "Student") at the same x position. */
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.01em;
@@ -1735,7 +1716,7 @@ html[data-theme="light"] .perf__teacher-chip {
   transition: opacity 360ms var(--ease), transform 360ms var(--ease);
 }
 .perf__hint-text {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
   font-size: 12.5px;
   font-weight: 700;
   letter-spacing: 0.01em;
@@ -1776,7 +1757,7 @@ html[data-theme="light"] .perf__hint-text {
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(118,185,0,0.22), rgba(118,185,0,0.10));
   color: var(--nv);
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
   font-weight: 700;
   font-size: 14px;
   letter-spacing: 0.02em;
@@ -1826,7 +1807,7 @@ html[data-theme="light"] .perf__train-btn:hover {
   max-width: 440px;
 }
 .perf__progress-label {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
   font-size: clamp(17px, 1.5vw, 19px);
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -1984,7 +1965,7 @@ html[data-theme="light"] .perf__progress-num {
   box-shadow: 0 0 0 2px rgba(11, 29, 5, 0.18);
 }
 .perf__method {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
   font-weight: 600;
   color: var(--fg);
   font-size: 15px;
@@ -2055,11 +2036,11 @@ html[data-theme="light"] .perf__progress-num {
 /* Animations only fire after the panel scrolls into view */
 .perf.is-visible .perf__fill--pos,
 .perf.is-visible .perf__fill--zppo {
-  animation: perf-grow-pos 3.6s cubic-bezier(0.3, 0.05, 0.4, 1) forwards;
+  animation: perf-grow-pos var(--dur, 3.6s) cubic-bezier(0.3, 0.05, 0.4, 1) forwards;
   animation-delay: var(--d, 0.4s);
 }
 .perf.is-visible .perf__fill--neg {
-  animation: perf-grow-neg 3.6s cubic-bezier(0.3, 0.05, 0.4, 1) forwards;
+  animation: perf-grow-neg var(--dur, 3.6s) cubic-bezier(0.3, 0.05, 0.4, 1) forwards;
   animation-delay: var(--d, 0.4s);
 }
 @keyframes perf-grow-pos {
@@ -2103,7 +2084,7 @@ html[data-theme="light"] .perf__progress-num {
   font-weight: 800;
 }
 .perf__method-ours {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
   font-size: 0.78em;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -2111,11 +2092,13 @@ html[data-theme="light"] .perf__progress-num {
   font-style: italic;
 }
 
-/* Stagger animation delays per row */
-.perf__row[data-method="off"]  .perf__fill { --d: 0.20s; }
-.perf__row[data-method="on"]   .perf__fill { --d: 0.35s; }
-.perf__row[data-method="grpo"] .perf__fill { --d: 0.50s; }
-.perf__row[data-method="zppo"] .perf__fill { --d: 0.70s; }
+/* Stagger START per row (--d), but stretch DURATION (--dur) so every bar
+   finishes at --d + --dur = 4.30s — exactly when the VLM Training progress
+   bar hits 100%. This keeps the cascade-in feel while all bars stop together. */
+.perf__row[data-method="off"]  .perf__fill { --d: 0.20s; --dur: 4.10s; }
+.perf__row[data-method="on"]   .perf__fill { --d: 0.35s; --dur: 3.95s; }
+.perf__row[data-method="grpo"] .perf__fill { --d: 0.50s; --dur: 3.80s; }
+.perf__row[data-method="zppo"] .perf__fill { --d: 0.70s; --dur: 3.60s; }
 
 .perf__foot {
   margin: 18px 0 0;
@@ -2125,7 +2108,7 @@ html[data-theme="light"] .perf__progress-num {
   line-height: 1.5;
   letter-spacing: 0.02em;
   text-align: center;
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
 }
 .perf__foot #perfFootSize {
   font-family: 'JetBrains Mono', 'Consolas', monospace;
@@ -2385,7 +2368,7 @@ html[data-theme="light"] .perf__method-ours { color: #6c757d; }
   border-color: rgba(118,185,0,0.35);
 }
 .impact__num {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Rubik', sans-serif;
   font-size: clamp(36px, 5vw, 54px);
   font-weight: 800;
   line-height: 1;
@@ -2435,7 +2418,7 @@ html[data-theme="light"] .perf__method-ours { color: #6c757d; }
 .impact-bar__seg:last-child { border-right: 0; }
 
 .impact-bar__num {
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-family: 'Rubik', sans-serif;
   font-size: clamp(32px, 3.6vw, 46px);
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -2582,7 +2565,7 @@ html[data-theme="light"] .impact-bar__num { color: #4a7800; }
   box-shadow: 0 0 14px currentColor;
 }
 .prs__tag {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
   font-size: clamp(14px, 1.25vw, 16px);
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -2695,7 +2678,7 @@ html[data-theme="light"] .prs__card--solution .prs__head { color: #4a7800; }
   background: var(--nv-soft);
   color: var(--nv);
   border: 1px solid rgba(118,185,0,0.45);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Rubik', sans-serif;
   font-weight: 800;
   font-size: 22px;
   display: inline-flex;
@@ -3019,7 +3002,7 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
 .qual__card .verdict-mark {
   display: inline-block;
   margin-left: 8px;
-  font-family: 'Inter','Helvetica Neue',Arial,sans-serif;
+  font-family: 'Rubik','Helvetica Neue',Arial,sans-serif;
   font-weight: 700;
 }
 .qual__card .verdict-mark--ok { color: var(--nv); }
@@ -3141,10 +3124,10 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
   .nav__logo { height: 22px; }
 
   .hero { padding: 36px 16px 18px; }
-  .hero__inner { text-align: left; }
-  .hero__title { margin-left: 0; }
+  .hero__inner { text-align: center; }
+  .hero__title { margin-left: auto; margin-right: auto; }
   .hero__zppo { letter-spacing: -0.08em; }
-  .hero__sub { justify-content: flex-start; }
+  .hero__sub { justify-content: center; }
   /* On mobile, drop the robot back into normal flow so it doesn't overflow */
   .emoji-wrap {
     position: static;
@@ -3152,7 +3135,7 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
     transform: translateY(2px);
     animation: none;
   }
-  .authors, .affiliation, .hero__cta, .hero__eyebrow { justify-content: flex-start; }
+  .authors, .affiliation, .hero__cta, .hero__eyebrow { justify-content: center; }
 
   .section { padding: 56px 16px; }
 
@@ -3165,6 +3148,20 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
   .qual__nav { width: 40px; height: 40px; }
   .qual__nav--prev { left: 4px; }
   .qual__nav--next { right: 4px; }
+}
+
+@media (max-width: 600px) {
+  /* Stack the Paper / Code / Models CTAs one per row so they never wrap into
+     an uneven 2 + 1 layout on phones. Centered to match the mobile hero. */
+  .hero__cta {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .cta-col {
+    width: 100%;
+    align-items: center;
+  }
 }
 
 @media (max-width: 520px) {
@@ -3205,7 +3202,7 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
   display: block;
   width: 100%;
   height: auto;
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
   font-size: 12px;
 }
 
@@ -3378,7 +3375,7 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
   stroke-width: 2;
 }
 .zppo-anim__ncq-stamp text {
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-family: 'Rubik', sans-serif;
   font-size: 18px;
   font-weight: 900;
   letter-spacing: 0.12em;

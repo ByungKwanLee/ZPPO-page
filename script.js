@@ -208,9 +208,9 @@
     if (btnLabel) btnLabel.textContent = 'VLM Training';
   }
 
-  // Total run duration must match the longest staggered CSS animation:
-  //   max delay (ZPPO = 700ms) + animation duration (3600ms) = 4300ms
-  const DURATION   = 3600;
+  // Every row starts at its own DELAYS[method] but is stretched to finish at
+  // TOTAL_RUN, so all counters + bars + the VLM Training progress bar land on
+  // 100% at the same instant. (Per-row duration = TOTAL_RUN - delay.)
   const DELAYS     = { off: 200, on: 350, grpo: 500, zppo: 700 };
   const TOTAL_RUN  = 4300;
   const ease       = t => 1 - Math.pow(1 - t, 3);
@@ -267,12 +267,16 @@
     panel.querySelectorAll('.perf__row[data-method]').forEach(row => {
       const method = row.getAttribute('data-method');
       const delay  = DELAYS[method] ?? 200;
+      // Stretch each row's count-up so it ends exactly at TOTAL_RUN: rows
+      // still START staggered (the cascade), but every row + the VLM Training
+      // progress bar all cross the finish line together at 100%.
+      const dur    = TOTAL_RUN - delay;
       row.querySelectorAll('.perf__val').forEach(el => {
         const finalNum = parseFinal(el);
         const start    = performance.now() + delay;
         const tick = (now) => {
           if (myToken !== runToken) return; // run was cancelled / superseded
-          const t = Math.min(1, Math.max(0, (now - start) / DURATION));
+          const t = Math.min(1, Math.max(0, (now - start) / dur));
           const v = finalNum * ease(t);
           el.textContent = formatVal(v);
           applyValColor(el, v, method);
@@ -286,12 +290,13 @@
     // We reuse the ZPPO row's stagger delay so the hero strip and the table
     // both finish at the same moment.
     const impactDelay = DELAYS.zppo;
+    const impactDur   = TOTAL_RUN - impactDelay;
     impactValEls.forEach(el => {
       const finalNum = parseFinal(el);
       const start    = performance.now() + impactDelay;
       const tick = (now) => {
         if (myToken !== runToken) return;
-        const t = Math.min(1, Math.max(0, (now - start) / DURATION));
+        const t = Math.min(1, Math.max(0, (now - start) / impactDur));
         const v = finalNum * ease(t);
         el.textContent = formatVal(v);
         if (t < 1) requestAnimationFrame(tick);
@@ -988,6 +993,33 @@ function renderTable() {
 
 const QUAL = [
   {
+    id: 'straws',
+    scale: '0.8B',
+    domain: 'Visual Counting  ·  BCQ ✓ / NCQ ✗',
+    img: 'assets/qualitative/straws_0.png',
+    question: 'How many straws are in the photo?',
+    ref: '3',
+    studentWrong: 'Plain rollouts: 0 / 8 correct (all answer 0 — “no straws in the meal scene”)',
+    bcq: {
+      verdict: 'ok',
+      text: `<think>
+Candidate A performs a global "no straws in the meal scene" sweep without naming a location, while Candidate B commits to a specific region (the right edge of the frame), a specific shape (cylindrical), a specific colour (white), and a specific count of three. A positionally-grounded specific commitment is harder to fabricate than a blanket negative, so I commit to Candidate B on falsifiability, not the label. ... Answer: 3.
+</think>
+
+\\boxed{3}   ✓`
+    },
+    ncq: {
+      verdict: 'no',
+      text: `<think>
+All eight listed candidates conclude 0 with the same global "no straws in the scene" reasoning, and none describes a region or shape that the consensus might have missed. The prompt rules 0 out, but without a single localised cue in the listed traces I have no foothold for identifying where a missed cluster would be. I revert to the consensus. Answer: 0.
+</think>
+
+\\boxed{0}   ✗
+(entire 0/8 NCQ group fails — the qualitative shape of the 0.8B match-neg row)`
+    },
+    caption: 'A 0.8B student lacks the capacity to override its own consensus when every listed trace is a generic global negative; only the teacher-grounded BCQ branch, which contributes a positionally-specific anchor (right-edge cluster, cylindrical/white, count of three), recovers the count.'
+  },
+  {
     id: 'banana',
     scale: '2B',
     domain: 'Visual Counting',
@@ -1066,33 +1098,6 @@ All eight listed candidates report 3 with the same "row of three" justification,
     caption: 'A 4B student fails on every plain rollout (all answer 3); BCQ leans on an internal consistency check of the alternating White/Dark/White/Dark sequence, while NCQ names the “collapse two adjacent spines into one” failure mode and corrects it without access to the teacher.'
   },
   {
-    id: 'straws',
-    scale: '0.8B',
-    domain: 'Visual Counting  ·  BCQ ✓ / NCQ ✗',
-    img: 'assets/qualitative/straws_0.png',
-    question: 'How many straws are in the photo?',
-    ref: '3',
-    studentWrong: 'Plain rollouts: 0 / 8 correct (all answer 0 — “no straws in the meal scene”)',
-    bcq: {
-      verdict: 'ok',
-      text: `<think>
-Candidate A performs a global "no straws in the meal scene" sweep without naming a location, while Candidate B commits to a specific region (the right edge of the frame), a specific shape (cylindrical), a specific colour (white), and a specific count of three. A positionally-grounded specific commitment is harder to fabricate than a blanket negative, so I commit to Candidate B on falsifiability, not the label. ... Answer: 3.
-</think>
-
-\\boxed{3}   ✓`
-    },
-    ncq: {
-      verdict: 'no',
-      text: `<think>
-All eight listed candidates conclude 0 with the same global "no straws in the scene" reasoning, and none describes a region or shape that the consensus might have missed. The prompt rules 0 out, but without a single localised cue in the listed traces I have no foothold for identifying where a missed cluster would be. I revert to the consensus. Answer: 0.
-</think>
-
-\\boxed{0}   ✗
-(entire 0/8 NCQ group fails — the qualitative shape of the 0.8B match-neg row)`
-    },
-    caption: 'A 0.8B student lacks the capacity to override its own consensus when every listed trace is a generic global negative; only the teacher-grounded BCQ branch, which contributes a positionally-specific anchor (right-edge cluster, cylindrical/white, count of three), recovers the count.'
-  },
-  {
     id: 'airplane',
     scale: '9B',
     domain: 'Chart Reading',
@@ -1161,18 +1166,17 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
           <span class="qual__chip qual__chip--ref">Ref: ${q.ref}</span>
           <span class="qual__chip qual__chip--bad">${q.studentWrong}</span>
         </div>
-        <p style="margin:6px 0 0;font-size:13px;color:var(--fg-3);line-height:1.55">${q.caption}</p>
       </div>
       <div class="qual__cards">
         <div class="qual__card qual__card--bcq">
-          <h4>BCQ <span class="badge">teacher-correct + student-wrong (anonymized)</span></h4>
+          <h4>BCQ</h4>
           <div class="trace">${pretty(q.bcq.text)}</div>
           <span class="verdict ${q.bcq.verdict==='ok'?'verdict--ok':'verdict--no'}">
             ${q.bcq.verdict==='ok' ? '✓ Recovered correct answer' : '✗ Stayed wrong'}
           </span>
         </div>
         <div class="qual__card qual__card--ncq">
-          <h4>NCQ <span class="badge">all 8 student wrongs · no teacher</span></h4>
+          <h4>NCQ</h4>
           <div class="trace">${pretty(q.ncq.text)}</div>
           <span class="verdict ${q.ncq.verdict==='ok'?'verdict--ok':'verdict--no'}">
             ${q.ncq.verdict==='ok' ? '✓ Recovered correct answer' : '✗ Stayed wrong'}
