@@ -46,10 +46,11 @@
 
   // Map row data-method → key in DATA tables (replay-buffer variants only)
   const METHOD_KEY_TO_DATA = {
-    off:  'Off-Distill†',
-    on:   'On-Distill†',
-    grpo: 'GRPO†',
-    zppo: 'ZPPO',
+    off:    'Off-Distill†',
+    on:     'On-Distill†',
+    grpo:   'GRPO†',
+    prefix: 'GRPO†+Prefix', // delta always supplied via DELTA_OVERRIDES below
+    zppo:   'ZPPO',
   };
   const FAMILIES = ['LLM', 'VLM', 'Video']; // column order in the perf table
 
@@ -63,24 +64,14 @@
   // here so what the user sees matches the manuscript exactly.
   const DELTA_OVERRIDES = {
     '0.8B': {
-      VLM:   { off:  0.5, on:  1.3, grpo:  4.4, zppo:  9.3 },
-      LLM:   { off: -2.7, on: -2.0, grpo:  3.5, zppo:  7.9 },
-      Video: { off: -3.3, on: -2.5, grpo:  2.2, zppo:  4.5 },
+      VLM:   { off:  0.5, on:  1.3, grpo:  4.4, prefix:  4.5, zppo:  9.3 },
+      LLM:   { off: -2.7, on: -2.0, grpo:  3.5, prefix:  1.9, zppo:  7.9 },
+      Video: { off: -3.3, on: -2.5, grpo:  2.2, prefix:  0.8, zppo:  4.5 },
     },
     '2B': {
-      VLM:   { off:  0.5, on:  1.2, grpo:  2.4, zppo:  5.2 },
-      LLM:   { off: -2.2, on: -1.6, grpo:  2.0, zppo:  5.1 },
-      Video: { off: -2.0, on: -1.4, grpo:  1.3, zppo:  2.6 },
-    },
-    '4B': {
-      VLM:   { off: -0.4, on:  0.9, grpo:  1.8, zppo:  4.0 },
-      LLM:   { off: -0.9, on: -0.4, grpo:  1.1, zppo:  3.9 },
-      Video: { off: -1.8, on: -1.2, grpo:  0.3, zppo:  0.3 },
-    },
-    '9B': {
-      VLM:   { off: -0.3, on:  0.7, grpo:  1.2, zppo:  2.8 },
-      LLM:   { off: -0.2, on:  0.2, grpo:  1.3, zppo:  3.9 },
-      Video: { off: -1.3, on: -0.7, grpo: -0.4, zppo:  0.4 },
+      VLM:   { off:  0.5, on:  1.2, grpo:  2.4, prefix:  2.7, zppo:  5.2 },
+      LLM:   { off: -2.2, on: -1.6, grpo:  2.0, prefix:  1.0, zppo:  5.1 },
+      Video: { off: -2.0, on: -1.4, grpo:  1.3, prefix:  0.4, zppo:  2.6 },
     },
   };
 
@@ -211,9 +202,13 @@
   // Every row starts at its own DELAYS[method] but is stretched to finish at
   // TOTAL_RUN, so all counters + bars + the VLM Training progress bar land on
   // 100% at the same instant. (Per-row duration = TOTAL_RUN - delay.)
-  const DELAYS     = { off: 200, on: 350, grpo: 500, zppo: 700 };
+  const DELAYS     = { off: 200, on: 350, grpo: 500, prefix: 600, zppo: 700 };
   const TOTAL_RUN  = 4300;
-  const ease       = t => 1 - Math.pow(1 - t, 3);
+  // Linear ramp — must match the linear VLM Training progress bar so the
+  // counters keep moving all the way to 100% and stop at the exact same
+  // instant the bar reaches 100% (an ease-out curve saturates ~90% early,
+  // which made the numbers look "stopped" before the bar finished).
+  const ease       = t => t;
 
   const valEls = Array.from(panel.querySelectorAll('.perf__val'));
 
@@ -416,7 +411,7 @@
       const h = document.documentElement;
       const scrolled = h.scrollTop || document.body.scrollTop;
       const total = (h.scrollHeight - h.clientHeight) || 1;
-      bar.style.width = Math.min(100, (scrolled / total) * 100) + '%';
+      bar.style.height = Math.min(100, (scrolled / total) * 100) + '%';
       ticking = false;
     });
   };
@@ -1014,8 +1009,7 @@ Candidate A performs a global "no straws in the meal scene" sweep without naming
 All eight listed candidates conclude 0 with the same global "no straws in the scene" reasoning, and none describes a region or shape that the consensus might have missed. The prompt rules 0 out, but without a single localised cue in the listed traces I have no foothold for identifying where a missed cluster would be. I revert to the consensus. Answer: 0.
 </think>
 
-\\boxed{0}   ✗
-(entire 0/8 NCQ group fails — the qualitative shape of the 0.8B match-neg row)`
+\\boxed{0}   ✗`
     },
     caption: 'A 0.8B student lacks the capacity to override its own consensus when every listed trace is a generic global negative; only the teacher-grounded BCQ branch, which contributes a positionally-specific anchor (right-edge cluster, cylindrical/white, count of three), recovers the count.'
   },
@@ -1146,9 +1140,15 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
     return escaped
+      // Mark elided reasoning explicitly instead of a bare "...".
+      .replace(/\s\.\.\.\s/g, ' <span class="trace-omit">--- omitted ---</span> ')
       .replace(/&lt;think&gt;/g, '<span class="think-tag">&lt;think&gt;</span>')
       .replace(/&lt;\/think&gt;/g, '<span class="think-tag">&lt;/think&gt;</span>')
-      .replace(/\\boxed\{([^}]*)\}/g, '<span class="boxed">$1</span>')
+      .replace(/\\boxed\{([^}]*)\}\s*([✓✗])?/g, (m, ans, mark) => {
+        if (mark === '✗') return `<span class="boxed boxed--no">\\boxed{${ans}}</span> <span class="ans-verdict ans-verdict--no">Wrong</span>`;
+        if (mark === '✓') return `<span class="boxed boxed--ok">\\boxed{${ans}}</span> <span class="ans-verdict ans-verdict--ok">Correct</span>`;
+        return `<span class="boxed">\\boxed{${ans}}</span>`;
+      })
       .replace(/\$\\bar r_x\s*=\s*0\$/g, '<span class="math">r̄<sub>x</sub> = 0</span>')
       .replace(/\$\\bar r_x\s*&lt;\s*0\.5\$/g, '<span class="math">r̄<sub>x</sub> &lt; 0.5</span>')
       .replace(/\$\\bar r_x\s*\\geq\s*0\.5\$/g, '<span class="math">r̄<sub>x</sub> ≥ 0.5</span>');
@@ -1159,32 +1159,36 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
     <article class="qual__slide ${i===0?'is-active':''}" role="listitem" data-i="${i}">
       <div class="qual__media">
         <img src="${q.img}" alt="Qualitative example: ${q.id}" loading="lazy">
-        <div class="qual__q"><strong>Q.</strong> ${q.question}</div>
-        <div class="qual__meta">
-          <span class="qual__chip">Student: Qwen3.5-${q.scale}</span>
-          <span class="qual__chip">${q.domain}</span>
-          <span class="qual__chip qual__chip--ref">Ref: ${q.ref}</span>
-          <span class="qual__chip qual__chip--bad">${q.studentWrong}</span>
+        <div class="qual__q"><strong>Q.</strong> ${q.question}<br><strong>A.</strong> <span class="qual__ans">${q.ref}</span></div>
+        <div class="qual__stat">
+          <span class="qual__stat-label">Initial Rollout Accuracy</span>
+          <span class="qual__stat-model">from Qwen3.5-${q.scale}</span>
+          <span class="qual__stat-val">0% <span class="qual__stat-hard">(Too hard)</span></span>
         </div>
       </div>
       <div class="qual__cards">
         <div class="qual__card qual__card--bcq">
           <h4>BCQ</h4>
           <div class="trace">${pretty(q.bcq.text)}</div>
-          <span class="verdict ${q.bcq.verdict==='ok'?'verdict--ok':'verdict--no'}">
-            ${q.bcq.verdict==='ok' ? '✓ Recovered correct answer' : '✗ Stayed wrong'}
-          </span>
         </div>
         <div class="qual__card qual__card--ncq">
           <h4>NCQ</h4>
           <div class="trace">${pretty(q.ncq.text)}</div>
-          <span class="verdict ${q.ncq.verdict==='ok'?'verdict--ok':'verdict--no'}">
-            ${q.ncq.verdict==='ok' ? '✓ Recovered correct answer' : '✗ Stayed wrong'}
-          </span>
         </div>
       </div>
     </article>
   `).join('');
+
+  // The example figures live in assets/qualitative/. If a figure is missing,
+  // swap the broken image for a styled placeholder so the layout still reads.
+  track.querySelectorAll('.qual__media img').forEach((img) => {
+    img.addEventListener('error', () => {
+      const ph = document.createElement('div');
+      ph.className = 'qual__imgph';
+      ph.textContent = 'example image';
+      img.replaceWith(ph);
+    }, { once: true });
+  });
 
   // Dots
   dots.innerHTML = QUAL.map((_, i) => `<button class="qual__dot ${i===0?'is-active':''}" role="tab" aria-label="Go to example ${i+1}" data-i="${i}"></button>`).join('');
@@ -1282,3 +1286,1042 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
     obs.observe(el);
   });
 })();
+
+/* =============================================================
+   Research Question — typewriter effect
+   Types the central question out character-by-character (preserving the
+   <em>/<strong> markup) the first time it scrolls into view, with a blinking
+   caret that disappears when typing finishes.
+   ============================================================= */
+(() => {
+  const q = document.querySelector('.rq__quote');
+  if (!q) return;
+
+  const skipBtn = document.getElementById('rqSkip');
+  let timer = null, revealTimer = null, done = false;
+  let seqTimers = [];        // pending stage timers for the diagram build
+  let caseRestores = [];     // [{el, html}] — restore typed case labels on skip
+  const wait = (fn, ms) => { const t = setTimeout(fn, ms); seqTimers.push(t); return t; };
+
+  const CARET = '<span class="rq__caret" aria-hidden="true"></span>';
+  const CLAUSE_PAUSE = 1400; // deliberate beat between clauses (<b class="rqp">)
+
+  // Reusable typewriter: types `full` HTML into `el` char-by-char (tags/entities
+  // applied instantly; <b class="rqp"> markers add a long pause). Calls onDone().
+  function typeInto(el, full, opts, onDone) {
+    opts = opts || {};
+    const base   = opts.base   != null ? opts.base   : 60;
+    const jitter = opts.jitter != null ? opts.jitter : 45;
+    const tokens = full.match(/<\/?[^>]+>|&[a-zA-Z0-9#]+;|[\s\S]/g) || [];
+    el.classList.add('is-typing');
+    let i = 0, out = '';
+    el.innerHTML = CARET;
+    const step = () => {
+      if (i >= tokens.length) {
+        el.classList.remove('is-typing');
+        el.innerHTML = full; // clean final markup, caret removed
+        if (onDone) onDone();
+        return;
+      }
+      const t = tokens[i++];
+      out += t;
+      // innerHTML each tick; the browser auto-balances any tag left open
+      // mid-word, so partial <strong>/<em> spans render correctly.
+      el.innerHTML = out + CARET;
+      if (t.charAt(0) === '<') {
+        if (t.charAt(1) !== '/' && t.indexOf('rqp') !== -1) timer = setTimeout(step, CLAUSE_PAUSE);
+        else step();
+        return;
+      }
+      let delay;
+      if (t === '?' || t === '.') delay = opts.quick ? 150 : 360;
+      else if (/[,;:]/.test(t))   delay = opts.quick ? 100 : 230;
+      else if (/\s/.test(t) || t.charAt(0) === '&') delay = opts.quick ? 24 : 50;
+      else {
+        delay = base + Math.random() * jitter;
+        // Human keyboard rhythm: quick bursts of keystrokes punctuated by the
+        // occasional brief hesitation, so it reads like a real person typing
+        // rather than a fixed metronome.
+        if (opts.human) {
+          const r = Math.random();
+          if (r < 0.10) delay += 140 + Math.random() * 260;   // occasional think-pause
+          else if (r < 0.48) delay *= 0.4;                     // fast burst
+        }
+      }
+      timer = setTimeout(step, delay);
+    };
+    step();
+  }
+
+  const qFull = q.innerHTML;
+
+  // Solution: lives inside the box, collapsed. After the question finishes we
+  // expand the box (CSS grid 0fr → 1fr via .is-shown) and then type the text in.
+  // The full text stays in the DOM (hidden by the collapse) so we can measure
+  // its final height and reserve it — that way the box reaches its full size on
+  // expand and does NOT keep growing while the text types in.
+  const solution = document.getElementById('rqSolution');
+  const solText  = solution ? solution.querySelector('.rq__solution-text') : null;
+  const solFull  = solText ? solText.innerHTML : '';
+
+  // Measure the FULL solution height (diagram + badge + full text) with an
+  // off-screen clone at the real box width, then pin it as a fixed height so
+  // the box expands once and never resizes while the text types in.
+  function measureSolutionHeight() {
+    if (!solution) return 0;
+    const inner = solution.querySelector('.rq__solution-inner');
+    const qbox  = document.querySelector('.rq__box--quote');
+    const w = qbox ? qbox.getBoundingClientRect().width
+                   : (inner ? inner.getBoundingClientRect().width : 0);
+    if (!inner || !w) return 0;
+    const clone = inner.cloneNode(true);
+    const ct = clone.querySelector('.rq__solution-text');
+    if (ct) ct.innerHTML = solFull;          // full text for true final height
+    const cp = clone.querySelector('.rq__panel');
+    if (cp) cp.style.width = '100%';          // full-width box (matches the real one)
+    clone.style.cssText =
+      'position:absolute;left:-99999px;top:0;visibility:hidden;width:' + w + 'px;';
+    document.body.appendChild(clone);
+    const h = clone.getBoundingClientRect().height;
+    clone.remove();
+    return Math.ceil(h) + 2;   // small buffer so overflow:hidden never clips
+  }
+
+  // Build the Solution diagram in stages: the Hard Question fades in, the fork
+  // appears, then each branch types out its "If Teacher ..." case label and
+  // builds its card (BCQ first, then NCQ).
+  function buildDiagram(dh, onComplete) {
+    const qpill = dh.querySelector('.dh__qpill');
+    const fork  = dh.querySelector('.dh__fork-svg');
+    const bcq   = dh.querySelector('.dh__branch--bcq');
+    const ncq   = dh.querySelector('.dh__branch--ncq');
+
+    dh.classList.add('is-anim');               // hide pieces (opacity only; layout kept)
+
+    // Remember + clear every text bit that types in, reserving sizes first so the
+    // layout never reflows. Candidate boxes reserve their full size (so the grid
+    // columns stay equal) and stay hidden until their own text starts typing.
+    caseRestores = [];
+    const stash = (el) => { if (!el) return; caseRestores.push({ el, html: el.innerHTML }); el.textContent = ''; };
+    [bcq, ncq].forEach((br) => stash(br && br.querySelector('.dh__case')));
+    // Intro lines + box: reserve width AND height so the centered typing stays anchored.
+    dh.querySelectorAll('.dh__intro-line, .dh__qpill').forEach((el) => {
+      el.style.minWidth = el.offsetWidth + 'px';
+      el.style.minHeight = el.offsetHeight + 'px';
+      stash(el);
+    });
+    dh.querySelectorAll('.dh__label-t, .dh__qtext, .dh__instr').forEach((el) => {
+      el.style.minHeight = el.offsetHeight + 'px';
+      stash(el);
+    });
+    dh.querySelectorAll('.dh__cand').forEach((cand) => {
+      cand.style.minWidth = cand.offsetWidth + 'px';
+      cand.style.minHeight = cand.offsetHeight + 'px';
+      stash(cand.querySelector('.dh__cand-ph'));
+    });
+    const introEl = dh.querySelector('.dh__intro');   // hold width so "If" doesn't shift as the box grows
+    if (introEl) introEl.style.minWidth = introEl.offsetWidth + 'px';
+
+    const show = (el) => el && el.classList.add('is-in');
+    const fullOf = (el) => (caseRestores.find((r) => r.el === el) || {}).html || '';
+
+    // Type a card's body: question → instruction → each response (the response box
+    // only appears as its text starts typing — nothing is pre-drawn empty).
+    function typeCard(card, done) {
+      const els = [...card.querySelectorAll('.dh__qtext, .dh__instr, .dh__cand-ph')];
+      let i = 0;
+      (function next() {
+        if (i >= els.length) { card.classList.add('is-built'); if (done) done(); return; }
+        const el = els[i++];
+        const cand = el.closest('.dh__cand');
+        if (cand) cand.classList.add('is-in');   // reveal the response box as it types
+        typeInto(el, fullOf(el), { base: 13, jitter: 10, quick: true }, () => wait(next, 110));
+      })();
+    }
+
+    // Build a branch: case label types → pill shows + subtitle types → the empty
+    // card frame appears → its body types in, top to bottom.
+    function buildBranch(branch, after) {
+      if (!branch) { if (after) after(); return; }
+      const caseEl = branch.querySelector('.dh__case');
+      typeInto(caseEl, fullOf(caseEl), { base: 58, jitter: 32 }, () => {
+        wait(() => {
+          const label = branch.querySelector('.dh__label');
+          show(label);
+          const sub = label.querySelector('.dh__label-t');
+          typeInto(sub, fullOf(sub), { base: 13, jitter: 10, quick: true }, () => {
+            wait(() => {
+              const cardEl = branch.querySelector('.dh__card');
+              show(cardEl);
+              wait(() => typeCard(cardEl, () => { if (after) wait(after, 500); }), 320);
+            }, 220);
+          });
+        }, 240);
+      });
+    }
+
+    // Intro: "If" types (no box) → the box appears and "hard question" types into
+    // it → "is given" types. Then the fork and the two branches build.
+    function buildIntro(done) {
+      const lines = dh.querySelectorAll('.dh__intro-line');
+      const line1 = lines[0], line2 = lines[1];
+      typeInto(line1, fullOf(line1), { base: 26, jitter: 16, quick: true }, () => {
+        wait(() => {
+          show(qpill);
+          typeInto(qpill, fullOf(qpill), { base: 46, jitter: 24 }, () => {
+            wait(() => {
+              typeInto(line2, fullOf(line2), { base: 26, jitter: 16, quick: true }, () => {
+                if (done) wait(done, 350);
+              });
+            }, 200);
+          });
+        }, 240);
+      });
+    }
+
+    const forkBcq = fork && fork.querySelector('.dh__fork-path--bcq');
+    const forkNcq = fork && fork.querySelector('.dh__fork-path--ncq');
+    wait(() => buildIntro(() => {
+      show(fork);                       // reveal the svg container (paths still hidden)
+      wait(() => {
+        show(forkBcq);                  // cyan arrow first
+        buildBranch(bcq, () => {
+          show(forkNcq);                // magenta arrow only after BCQ is built
+          buildBranch(ncq, onComplete);
+        });
+      }, 650);
+    }), 300);
+  }
+
+  // Reveal the whole diagram at once (skip / reduced motion / static).
+  function finalizeDiagram() {
+    const dh = solution && solution.querySelector('.dh');
+    if (!dh) return;
+    caseRestores.forEach(({ el, html }) => {
+      el.classList.remove('is-typing');
+      el.style.minHeight = '';
+      el.style.minWidth = '';
+      el.innerHTML = html;
+    });
+    caseRestores = [];
+    dh.querySelectorAll('.dh__cand').forEach((c) => { c.style.minWidth = ''; c.style.minHeight = ''; });
+    const introEl = dh.querySelector('.dh__intro');
+    if (introEl) introEl.style.minWidth = '';
+    dh.querySelectorAll('.dh__qpill, .dh__fork-svg, .dh__fork-path, .dh__label, .dh__card, .dh__cand, .dh__caption')
+      .forEach((el) => el.classList.add('is-in'));
+    dh.querySelectorAll('.dh__card').forEach((c) => c.classList.add('is-built'));
+  }
+
+  function revealSolution(animate) {
+    if (!solution) return;
+    const dh = solution.querySelector('.dh');
+    const H = measureSolutionHeight();          // measure full content first
+    if (H) solution.style.setProperty('--sol-h', H + 'px'); // pin the fixed height
+    if (animate && dh) {
+      // After the diagram builds, the Effect section types out, then we're done.
+      buildDiagram(dh, () => revealEffect(true, () => { done = true; hideSkip(); }));
+    }
+    solution.classList.add('is-shown');         // expand the box (pieces hidden if animating)
+    if (!animate) { finalizeDiagram(); revealEffect(false); }   // static: show everything
+  }
+
+  const inspiration = document.getElementById('rqInspiration');
+  const zpd = inspiration ? inspiration.querySelector('.zpd') : null;
+  const zpdLegend = zpd ? zpd.querySelector('.zpd__legend') : null;
+  const zpdLegendFull = zpdLegend ? zpdLegend.innerHTML : '';
+  const zpdIntro = document.getElementById('zpdIntro');
+  const zpdIntroFull = zpdIntro ? zpdIntro.innerHTML : '';
+  const zpdRef = document.getElementById('zpdRef');
+  const zpdRefFull = zpdRef ? zpdRef.innerHTML : '';
+  // Byung-Kwan Lee photo: fall back to an "BK" placeholder if the file is missing.
+  const bkPhoto = document.getElementById('bkPhoto');
+  if (bkPhoto) {
+    const bkFallback = () => {
+      const ph = document.createElement('div');
+      ph.className = 'zpd__author-ph';
+      ph.textContent = 'BK';
+      bkPhoto.replaceWith(ph);
+    };
+    bkPhoto.addEventListener('error', bkFallback);
+    if (bkPhoto.complete && bkPhoto.naturalWidth === 0) bkFallback();
+  }
+  // Through Our Lens — its own reveal step (after Inspiration).
+  const rqLens = document.getElementById('rqLens');
+  const lensZpd = rqLens ? rqLens.querySelector('.zpd') : null;
+  const lensLegend = lensZpd ? lensZpd.querySelector('.zpd__legend') : null;
+  const lensLegendFull = lensLegend ? lensLegend.innerHTML : '';
+  const lensIntro = document.getElementById('lensIntro');
+  const lensIntroFull = lensIntro ? lensIntro.innerHTML : '';
+  // Effect — the final reveal step (after the Solution): BCQ / NCQ effects type out.
+  const rqEffect = document.getElementById('rqEffect');
+  const effectBcq = document.getElementById('effectBcq');
+  const effectBcqFull = effectBcq ? effectBcq.innerHTML : '';
+  const effectNcq = document.getElementById('effectNcq');
+  const effectNcqFull = effectNcq ? effectNcq.innerHTML : '';
+  let lensShown = false;
+  let effectShown = false;
+  let inspShown = false;
+  // animate=false → show everything instantly (skip / reduced motion).
+  // animate=true  → type the intro line, then grow the zones in; onDone fires after.
+  function revealInspiration(animate, onDone) {
+    if (!inspiration) { if (onDone) onDone(); return; }
+    inspiration.classList.add('is-shown');
+    if (!animate) {
+      if (zpdRef) zpdRef.innerHTML = zpdRefFull;
+      if (zpdIntro) zpdIntro.innerHTML = zpdIntroFull;
+      if (zpdLegend) zpdLegend.innerHTML = zpdLegendFull;
+      if (zpd) zpd.classList.remove('zpd--anim');   // zones at their normal (visible) state
+      inspShown = true;
+      if (onDone) onDone();
+      return;
+    }
+    if (inspShown) { if (onDone) onDone(); return; }
+    inspShown = true;
+    if (zpd) zpd.classList.add('zpd--anim');         // hide zones (scaled to 0)
+    if (zpdIntro) zpdIntro.innerHTML = '';           // keep the intro empty until the citation finishes typing
+    if (zpdLegend) zpdLegend.innerHTML = '';         // legend types out after the zones grow
+    const armZones = () => {
+      seqTimers.push(setTimeout(() => {
+        if (zpd) zpd.classList.add('is-zones');       // circles grow in, labels fade in
+        seqTimers.push(setTimeout(() => {
+          if (zpdLegend) {
+            zpdLegend.style.opacity = '1';
+            zpdLegend.style.transform = 'none';
+            typeInto(zpdLegend, zpdLegendFull, { base: 14, jitter: 20, quick: true }, () => { if (onDone) onDone(); });
+          } else if (onDone) { onDone(); }
+        }, 1300));
+      }, 300));
+    };
+    const typeIntro = () => {
+      if (zpdIntro) typeInto(zpdIntro, zpdIntroFull, { base: 20, jitter: 36, human: true }, armZones);
+      else armZones();
+    };
+    // Type the citation first, then the intro line, then reveal the photo + zones.
+    if (zpdRef) typeInto(zpdRef, zpdRefFull, { base: 14, jitter: 22, quick: true }, typeIntro);
+    else typeIntro();
+  }
+
+  // Through Our Lens reveal — same pattern: expand the block, type its intro, then
+  // grow its zones (+ photo) in; onDone fires after.
+  function revealLens(animate, onDone) {
+    if (!rqLens) { if (onDone) onDone(); return; }
+    rqLens.classList.add('is-shown');
+    if (!animate) {
+      if (lensIntro) lensIntro.innerHTML = lensIntroFull;
+      if (lensLegend) lensLegend.innerHTML = lensLegendFull;
+      if (lensZpd) lensZpd.classList.remove('zpd--anim');
+      lensShown = true;
+      if (onDone) onDone();
+      return;
+    }
+    if (lensShown) { if (onDone) onDone(); return; }
+    lensShown = true;
+    if (lensZpd) lensZpd.classList.add('zpd--anim');
+    if (lensIntro) lensIntro.innerHTML = '';
+    if (lensLegend) lensLegend.innerHTML = '';
+    const armLensZones = () => {
+      seqTimers.push(setTimeout(() => {
+        if (lensZpd) lensZpd.classList.add('is-zones');
+        seqTimers.push(setTimeout(() => {
+          if (lensLegend) {
+            lensLegend.style.opacity = '1';
+            lensLegend.style.transform = 'none';
+            typeInto(lensLegend, lensLegendFull, { base: 14, jitter: 20, quick: true }, () => { if (onDone) onDone(); });
+          } else if (onDone) { onDone(); }
+        }, 1300));
+      }, 300));
+    };
+    if (lensIntro) typeInto(lensIntro, lensIntroFull, { base: 20, jitter: 36, human: true }, armLensZones);
+    else armLensZones();
+  }
+
+  // Effect reveal — expand the block, then type the BCQ effect, then the NCQ effect.
+  function revealEffect(animate, onDone) {
+    if (!rqEffect) { if (onDone) onDone(); return; }
+    rqEffect.classList.add('is-shown');
+    if (!animate) {
+      if (effectBcq) effectBcq.innerHTML = effectBcqFull;
+      if (effectNcq) effectNcq.innerHTML = effectNcqFull;
+      effectShown = true;
+      if (onDone) onDone();
+      return;
+    }
+    if (effectShown) { if (onDone) onDone(); return; }
+    effectShown = true;
+    if (effectBcq) effectBcq.innerHTML = '';
+    if (effectNcq) effectNcq.innerHTML = '';
+    // Type BCQ and NCQ at the same time; fire onDone only once both finish.
+    let pending = (effectBcq ? 1 : 0) + (effectNcq ? 1 : 0);
+    const oneDone = () => { pending -= 1; if (pending <= 0 && onDone) onDone(); };
+    if (pending === 0) { if (onDone) onDone(); return; }
+    if (effectBcq) typeInto(effectBcq, effectBcqFull, { base: 13, jitter: 18, quick: true }, oneDone);
+    if (effectNcq) typeInto(effectNcq, effectNcqFull, { base: 13, jitter: 18, quick: true }, oneDone);
+  }
+
+  function hideSkip() { if (skipBtn) skipBtn.classList.add('is-hidden'); }
+
+  // Skip: jump straight to the fully-typed question + revealed solution, cancelling
+  // any pending typing/reveal timers so impatient readers can move on instantly.
+  function skip() {
+    if (done) return;
+    done = true;
+    clearTimeout(timer);
+    clearTimeout(revealTimer);
+    seqTimers.forEach(clearTimeout);
+    seqTimers = [];
+    q.classList.remove('is-typing');
+    q.style.minHeight = '';
+    q.innerHTML = qFull;
+    revealInspiration();
+    revealLens();
+    revealSolution(false);   // re-pin height + finalize the diagram (shows all)
+    hideSkip();
+  }
+  if (skipBtn) skipBtn.addEventListener('click', skip);
+
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) {
+    revealInspiration();
+    revealLens();
+    revealSolution(false); // no animation: show question + inspiration + lens + solution at once
+    hideSkip();
+    return;
+  }
+
+  let started = false;
+  function run() {
+    if (started || done) return;
+    started = true;
+    // Reserve the quote's full height up front so the box never grows/jumps while
+    // typing; release it once the full text is in (its height then matches naturally).
+    const qh = q.getBoundingClientRect().height;
+    if (qh) q.style.minHeight = qh + 'px';
+    typeInto(q, qFull, { base: 15, jitter: 34, human: true }, () => {
+      q.style.minHeight = '';
+      revealTimer = setTimeout(() => {
+        // Sequence: Inspiration types/grows in → Through Our Lens → then the Solution builds.
+        revealInspiration(true, () => revealLens(true, () => revealSolution(true)));
+      }, 450);
+    });
+  }
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { run(); io.disconnect(); }
+      });
+    }, { threshold: 0.55 });
+    io.observe(q);
+  } else {
+    run();
+  }
+
+  // The diagram's text wraps differently at different widths, so re-measure and
+  // re-pin the reserved height on resize while the solution is open.
+  let resizeT;
+  window.addEventListener('resize', () => {
+    if (!solution || !solution.classList.contains('is-shown')) return;
+    clearTimeout(resizeT);
+    resizeT = setTimeout(() => {
+      const H = measureSolutionHeight();
+      if (H) solution.style.setProperty('--sol-h', H + 'px');
+    }, 150);
+  }, { passive: true });
+})();
+
+/* =============================================================
+   Problem "Takeaway" carousel
+   Slides between Takeaway 1/2/3 via prev/next buttons, dots, ←/→ keys
+   (when in view), and touch swipe on mobile.
+   ============================================================= */
+(() => {
+  const root = document.getElementById('problemTakeaway');
+  if (!root) return;
+  const track  = root.querySelector('.takeaway__track');
+  const slides = [...root.querySelectorAll('.takeaway__slide')];
+  const dotsWrap = root.querySelector('.takeaway__dots');
+  const prevBtn  = root.querySelector('.takeaway__nav--prev');
+  const nextBtn  = root.querySelector('.takeaway__nav--next');
+  const card     = root.closest('.prs__card');
+  const toggleBtn = card ? card.querySelector('.prs__head--toggle') : null;
+  const prs      = root.closest('.prs');
+  const hint     = prs ? prs.querySelector('.takeaway__hint') : null;
+  if (!track || slides.length === 0) return;
+
+  let idx = 0;
+
+  dotsWrap.innerHTML = slides.map((_, i) =>
+    `<button class="takeaway__dot${i === 0 ? ' is-active' : ''}" type="button" role="tab" aria-label="Problem ${i + 1}" data-i="${i}"></button>`
+  ).join('');
+  const dots = [...dotsWrap.querySelectorAll('.takeaway__dot')];
+
+  // Each problem maps to the TL;DR row(s) it talks about. We highlight those
+  // rows while the carousel is on screen, so the link reads clearly without
+  // cluttering the table when the reader is elsewhere on the page.
+  const ROW_LINKS = [['off', 'on'], ['grpo'], ['prefix']];
+  const perfRows = [...document.querySelectorAll('.perf__table .perf__row[data-method]')];
+  let revealed = false;
+  // Highlight persists while the Problem accordion is open, regardless of whether
+  // the Problem section is currently scrolled into view (so the linked rows stay
+  // marked when the reader scrolls back up to the table). Cleared when folded.
+  function applyRowLink() {
+    const keys = revealed ? (ROW_LINKS[idx] || []) : [];
+    perfRows.forEach(r => r.classList.toggle('is-linked', keys.includes(r.dataset.method)));
+  }
+
+  function go(i) {
+    idx = (i + slides.length) % slides.length;
+    track.style.transform = `translateX(${-idx * 100}%)`;
+    slides.forEach((s, k) => s.classList.toggle('is-active', k === idx));
+    dots.forEach((d, k) => {
+      d.classList.toggle('is-active', k === idx);
+      d.setAttribute('aria-selected', String(k === idx));
+    });
+    applyRowLink();
+  }
+  go(0);
+
+  // The Problem header doubles as a fold/unfold toggle: click to unfold the box,
+  // click again to fold it (Instagram/YouTube "show more / show less"). Slide
+  // navigation between 1/3 · 2/3 · 3/3 happens via the dots, swipe, and ←/→ keys.
+  function toggle() {
+    revealed = !revealed;
+    root.classList.toggle('is-revealed', revealed);
+    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', String(revealed));
+    if (hint) hint.classList.toggle('is-hidden', !revealed);
+    applyRowLink();
+  }
+  if (toggleBtn) toggleBtn.addEventListener('click', toggle);
+  if (prevBtn) prevBtn.addEventListener('click', () => go(idx - 1));
+  if (nextBtn) nextBtn.addEventListener('click', () => go(idx + 1));
+  dotsWrap.addEventListener('click', (e) => {
+    const b = e.target.closest('.takeaway__dot');
+    if (b) go(+b.dataset.i);
+  });
+
+  // ←/→ keys, only while the carousel is on screen and the box is revealed.
+  document.addEventListener('keydown', (e) => {
+    if (!revealed) return;
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const r = root.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > window.innerHeight) return;
+    if (e.key === 'ArrowLeft') go(idx - 1);
+    else go(idx + 1);
+  });
+
+  // Touch swipe (mobile).
+  let sx = null, sy = null, st = 0;
+  root.addEventListener('touchstart', (e) => {
+    const t = e.changedTouches[0];
+    sx = t.clientX; sy = t.clientY; st = Date.now();
+  }, { passive: true });
+  root.addEventListener('touchend', (e) => {
+    if (sx === null) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx, dy = t.clientY - sy, dt = Date.now() - st;
+    sx = null;
+    if (!revealed) return;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) && dt < 700) {
+      go(dx < 0 ? idx + 1 : idx - 1);
+    }
+  }, { passive: true });
+})();
+
+/* =============================================================
+   Method — animated ZPPO training loop (#methodLoop)
+   Plays the pipeline once at a calm pace:
+     dataset (+ replay buffer) → batch → one question →
+     teacher & student rollouts → BCQ / NCQ → "too hard" arrow
+     back into the replay buffer.
+   No auto-loop: when it finishes, a Replay button appears. The
+   first replay advances to step 2, where the batch also pulls the
+   replayed hard question back out of the buffer.
+   ============================================================= */
+(function () {
+  const root = document.getElementById('methodLoop');
+  if (!root) return;
+
+  const dm = (n) => root.querySelector('[data-mloop="' + n + '"]');
+
+  const caption = dm('caption');
+  const stepEl  = dm('step');
+  const badge   = dm('bufcount');
+  const db      = dm('db');
+  const buffer  = dm('buffer');
+  const batch   = dm('batch');
+  const qNode   = dm('q');
+  const teacher = dm('teacher');
+  const student = dm('student');
+  const bcq     = dm('bcq');
+  const ncq     = dm('ncq');
+  const feedback = dm('feedback');
+
+  const arrows      = [...root.querySelectorAll('.mloop__arrow')];
+  const arrow       = (i) => arrows[i];
+  const newChips    = [...root.querySelectorAll('.mloop__chip--new')];
+  const replayChips = [...root.querySelectorAll('.mloop__chip--replay')];
+  const tRolls = [...teacher.querySelectorAll('.mloop__roll')];
+  const sRolls = [...student.querySelectorAll('.mloop__roll')];
+  const tAcc = teacher.querySelector('.mloop__acc');
+  const sAcc = student.querySelector('.mloop__acc');
+
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const CAN_FLY = typeof Element !== 'undefined' && typeof Element.prototype.animate === 'function';
+  const FLY_DUR = 640;
+
+  // Overlay layer for flying tokens + the "too hard → buffer" return arrow.
+  const fxLayer = document.createElement('div');
+  fxLayer.className = 'mloop__fx';
+  fxLayer.setAttribute('aria-hidden', 'true');
+  root.appendChild(fxLayer);
+
+  // Replay button — shown once a cycle finishes (no auto-loop).
+  const replayBtn = document.createElement('button');
+  replayBtn.type = 'button';
+  replayBtn.className = 'mloop__replay';
+  replayBtn.innerHTML = '<span class="mloop__replay-ic" aria-hidden="true">\u21bb</span> Replay';
+  (root.querySelector('.mloop__bar') || root).appendChild(replayBtn);
+
+  let timers = [];
+  const at = (ms, fn) => { timers.push(setTimeout(fn, ms)); };
+  const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+
+  const allChips = [...newChips, ...replayChips];
+  const allRolls = [...tRolls, ...sRolls];
+
+  function center(el) {
+    const b = root.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2 - b.left, y: r.top + r.height / 2 - b.top, W: b.width, H: b.height, w: r.width };
+  }
+
+  // Animate a small token from one node's center to another's. `onArrive` fires
+  // as the token lands (or immediately if motion is unavailable).
+  function fly(from, to, opts) {
+    opts = opts || {};
+    if (CAN_FLY && from && to) {
+      try {
+        const a = center(from), c = center(to);
+        if (a.w && c.w) {
+          const tok = document.createElement('span');
+          tok.className = 'mloop__fly ' + (opts.cls || '');
+          tok.textContent = opts.label || 'Q';
+          fxLayer.appendChild(tok);
+          const anim = tok.animate([
+            { transform: 'translate(' + a.x + 'px,' + a.y + 'px) scale(.5)', opacity: 0 },
+            { transform: 'translate(' + a.x + 'px,' + a.y + 'px) scale(1)',  opacity: 1, offset: 0.16 },
+            { transform: 'translate(' + c.x + 'px,' + c.y + 'px) scale(1)',  opacity: 1, offset: 0.82 },
+            { transform: 'translate(' + c.x + 'px,' + c.y + 'px) scale(.5)', opacity: 0 }
+          ], { duration: FLY_DUR, easing: 'cubic-bezier(.45,0,.25,1)', fill: 'both' });
+          anim.onfinish = () => tok.remove();
+        }
+      } catch (e) { /* fall back to reveal only */ }
+    }
+    if (opts.onArrive) at(Math.round(FLY_DUR * 0.78), opts.onArrive);
+  }
+
+  // Curved "too hard → replay buffer" arrow, drawn from the question to the
+  // buffer with an arrowhead and a "too hard" label at its apex.
+  function drawReturnArrow(from, to, onDone) {
+    let drawn = false;
+    if (CAN_FLY && from && to) {
+      try {
+        const a = center(from), c = center(to);
+        if (a.w && c.w) {
+          const dip = Math.min(a.H - 8, Math.max(a.y, c.y) + 58);
+          const ex = c.x, ey = c.y + 16;
+          const svg = document.createElementNS(SVGNS, 'svg');
+          svg.setAttribute('class', 'mloop__arc');
+          svg.setAttribute('width', a.W);
+          svg.setAttribute('height', a.H);
+          svg.setAttribute('viewBox', '0 0 ' + a.W + ' ' + a.H);
+          const defs = document.createElementNS(SVGNS, 'defs');
+          defs.innerHTML = '<marker id="mloopArcHead" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0a35a"/></marker>';
+          svg.appendChild(defs);
+          const path = document.createElementNS(SVGNS, 'path');
+          path.setAttribute('class', 'mloop__arc-path');
+          path.setAttribute('d', 'M ' + a.x + ' ' + a.y + ' C ' + a.x + ' ' + dip + ', ' + ex + ' ' + dip + ', ' + ex + ' ' + ey);
+          path.setAttribute('marker-end', 'url(#mloopArcHead)');
+          svg.appendChild(path);
+          fxLayer.appendChild(svg);
+          const len = path.getTotalLength();
+          path.style.strokeDasharray = len;
+          path.style.strokeDashoffset = len;
+
+          const lbl = document.createElement('span');
+          lbl.className = 'mloop__arc-label';
+          lbl.textContent = 'too hard';
+          lbl.style.left = ((a.x + ex) / 2) + 'px';
+          lbl.style.top = dip + 'px';
+          fxLayer.appendChild(lbl);
+
+          requestAnimationFrame(() => {
+            path.style.transition = 'stroke-dashoffset 760ms ease';
+            path.style.strokeDashoffset = '0';
+            lbl.classList.add('is-in');
+          });
+          drawn = true;
+          if (onDone) at(860, onDone);
+        }
+      } catch (e) { /* ignore */ }
+    }
+    if (!drawn && onDone) at(200, onDone);
+  }
+
+  function hideAll() {
+    [db, buffer, batch, qNode, teacher, student, bcq, ncq].forEach((n) => n && n.classList.remove('is-in'));
+    buffer && buffer.classList.remove('is-active', 'is-pulse');
+    arrows.forEach((a) => a.classList.remove('is-in'));
+    allChips.forEach((c) => c.classList.remove('is-in'));
+    allRolls.forEach((r) => r.classList.remove('is-in'));
+    tAcc && tAcc.classList.remove('is-in');
+    sAcc && sAcc.classList.remove('is-in');
+    feedback && feedback.classList.remove('is-in');
+    fxLayer.innerHTML = '';
+  }
+
+  function setStep(n) {
+    if (stepEl) stepEl.innerHTML = 'Training step <b>' + (n === 1 ? '1' : '2') + '</b>';
+  }
+  function showReplay() { replayBtn.classList.add('is-show'); }
+  function hideReplay() { replayBtn.classList.remove('is-show'); }
+
+  // Static final state for reduced-motion / no-IO environments.
+  function showFinal() {
+    setStep(2);
+    badge.textContent = '1';
+    if (caption) caption.textContent =
+      'Each step samples new + replayed hard questions; teacher & student attempt one, and their rollouts are reformulated into BCQ / NCQ.';
+    [db, buffer, batch, qNode, teacher, student, bcq, ncq].forEach((n) => n && n.classList.add('is-in'));
+    buffer.classList.add('is-active');
+    arrows.forEach((a) => a.classList.add('is-in'));
+    allChips.forEach((c) => c.classList.add('is-in'));
+    allRolls.forEach((r) => r.classList.add('is-in'));
+    tAcc && tAcc.classList.add('is-in');
+    sAcc && sAcc.classList.add('is-in');
+    feedback && feedback.classList.add('is-in');
+  }
+
+  let bufCount = 0;   // questions living in the replay buffer (persists across replays)
+  let step = 0;
+
+  function playCycle() {
+    clearTimers();
+    hideAll();
+    hideReplay();
+    step += 1;
+    const hasReplay = bufCount > 0;
+    setStep(step);
+    badge.textContent = String(bufCount);
+    // On step 1 there's no replay yet — drop the replay chip entirely so the batch
+    // doesn't show an empty reserved slot (it only appears once the buffer is used).
+    replayChips.forEach((c) => { c.style.display = hasReplay ? '' : 'none'; });
+    const batchNote = batch.querySelector('.mloop__note');
+    if (batchNote) batchNote.textContent = hasReplay ? 'new + replayed' : 'new questions';
+
+    // 1 · dataset (+ buffer) emit questions that fly into the batch
+    at(300, () => {
+      caption.textContent = hasReplay
+        ? 'Sample a batch — new questions from the dataset plus replayed hard questions from the buffer.'
+        : 'Sample a batch of new questions from the dataset.';
+      db.classList.add('is-in');
+      buffer.classList.add('is-in');
+      if (hasReplay) buffer.classList.add('is-active');
+    });
+    at(900, () => { arrow(0).classList.add('is-in'); batch.classList.add('is-in'); });
+    at(1200, () => fly(db, batch, { cls: 'mloop__fly--new', onArrive: () => newChips[0].classList.add('is-in') }));
+    at(1600, () => fly(db, batch, { cls: 'mloop__fly--new', onArrive: () => newChips[1].classList.add('is-in') }));
+    at(2000, () => fly(db, batch, { cls: 'mloop__fly--new', onArrive: () => newChips[2].classList.add('is-in') }));
+    if (hasReplay) {
+      at(2500, () => fly(buffer, batch, { cls: 'mloop__fly--replay', onArrive: () => replayChips.forEach((c) => c.classList.add('is-in')) }));
+    }
+
+    // 2 · pull one question out of the batch
+    at(3200, () => {
+      caption.textContent = 'Take one question out of the batch.';
+      arrow(1).classList.add('is-in');
+      qNode.classList.add('is-in');
+      fly(batch, qNode, { cls: 'mloop__fly--q', label: '?' });
+    });
+
+    // 3 · the question goes to the teacher AND the student at once
+    at(4100, () => {
+      caption.textContent = 'Hand it to the teacher and the student at the same time — both roll out answers.';
+      arrow(2).classList.add('is-in');
+      teacher.classList.add('is-in');
+      student.classList.add('is-in');
+      fly(qNode, teacher, { cls: 'mloop__fly--q', label: '?' });
+      fly(qNode, student, { cls: 'mloop__fly--q', label: '?' });
+    });
+    at(4700, () => tRolls[0].classList.add('is-in'));
+    at(4950, () => tRolls[1].classList.add('is-in'));
+    at(5250, () => tAcc.classList.add('is-in'));
+    at(4800, () => sRolls[0].classList.add('is-in'));
+    at(5050, () => sRolls[1].classList.add('is-in'));
+    at(5300, () => sRolls[2].classList.add('is-in'));
+    at(5550, () => sRolls[3].classList.add('is-in'));
+    at(5850, () => sAcc.classList.add('is-in'));
+
+    // 4 · reformulate the rollouts into BCQ / NCQ boxes
+    at(6800, () => {
+      caption.textContent = "Teacher's correct + student's wrong \u2192 BCQ;  the student's wrong rollouts \u2192 NCQ.";
+      arrow(3).classList.add('is-in');
+      bcq.classList.add('is-in');
+    });
+    at(7100, () => ncq.classList.add('is-in'));
+
+    // 5 · the student found it too hard → the question goes back to the buffer
+    at(8000, () => {
+      caption.textContent = 'Student accuracy 25% < 50% \u2192 too hard, so the question goes back into the replay buffer.';
+      feedback.classList.add('is-in');
+      buffer.classList.add('is-in', 'is-active');
+      drawReturnArrow(qNode, buffer, () => {
+        if (bufCount < 1) bufCount = 1;
+        badge.textContent = String(bufCount);
+        buffer.classList.remove('is-pulse');
+        void buffer.offsetWidth;
+        buffer.classList.add('is-pulse');
+      });
+    });
+
+    // 6 · done — wait for the reader to press Replay (no auto-loop)
+    at(9400, showReplay);
+  }
+
+  replayBtn.addEventListener('click', () => { playCycle(); });
+
+  if (REDUCE) { showFinal(); return; }
+
+  // Auto-play once when first scrolled into view; afterwards it's manual (Replay).
+  let started = false;
+  const begin = () => { if (!started) { started = true; playCycle(); } };
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { begin(); io.unobserve(root); } });
+    }, { threshold: 0.2 });
+    io.observe(root);
+  } else {
+    begin();
+  }
+})();
+
+/* =============================================================
+   Method figure — reveal panels (a) → (b) → (c) → (d) one at a
+   time when the figure scrolls into view, with a caption per panel.
+   ============================================================= */
+(function () {
+  const fig = document.getElementById('methodFigure');
+  if (!fig) return;
+  const img = fig.querySelector('img');
+  const cap = fig.querySelector('figcaption');
+  if (!img) return;
+
+  const REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fullCap = cap ? cap.innerHTML : '';
+  const steps = [
+    { cls: 'stage-a',   html: "" },   // (a): the "why a replay buffer?" intro shows in the right-hand overlay
+    { cls: 'stage-abc', html: "" },   // (b)+(c) revealed together; the note is shown as an overlay over the lower band
+    { cls: 'stage-all', html: fullCap }   // (d)
+  ];
+  const stageClasses = ['stage-hidden', 'stage-a', 'stage-ab', 'stage-abc', 'stage-all'];
+
+  function setStage(i, instant) {
+    // `instant` snaps the clip-path (no wipe) — used when jumping backwards to (a)
+    // on Replay, so the figure never momentarily shows (b)/(c) under the intro text.
+    if (instant) fig.classList.add('mf-instant');
+    stageClasses.forEach((c) => fig.classList.remove(c));
+    fig.classList.add(steps[i].cls);
+    if (cap) cap.innerHTML = steps[i].html;
+    if (instant) {
+      void fig.offsetWidth;                 // commit the snapped clip before re-enabling
+      requestAnimationFrame(() => fig.classList.remove('mf-instant'));
+    }
+  }
+
+  // Step button — the reader clicks to walk through (a) → (b) → (c) → (d),
+  // then it turns into a Replay button to restart from (a).
+  const stepBtn = document.createElement('button');
+  stepBtn.type = 'button';
+  stepBtn.className = 'methodfig__replay';
+  fig.appendChild(stepBtn);
+
+  if (REDUCE) { fig.classList.add('stage-all'); return; }
+
+  const LAST = steps.length - 1;
+  let current = 0;
+
+  function render(instant) {
+    setStage(current, instant);
+    if (current >= LAST) {
+      stepBtn.innerHTML = '<span class="methodfig__replay-ic" aria-hidden="true">\u21bb</span> Replay';
+      stepBtn.setAttribute('aria-label', 'Replay the walkthrough from the start');
+    } else {
+      stepBtn.innerHTML = 'Next <span class="methodfig__replay-ic" aria-hidden="true">\u203a</span>';
+      stepBtn.setAttribute('aria-label', 'Show the next step');
+    }
+  }
+
+  function advance() {
+    const reset = current >= LAST;            // wrapping (d) → (a): snap, don't wipe
+    current = reset ? 0 : current + 1;
+    render(reset);
+  }
+  stepBtn.addEventListener('click', advance);
+
+  // Start hidden until the figure scrolls into view; then show panel (a)
+  // together with the Next button and wait for the reader to click.
+  fig.classList.add('stage-hidden');
+  let started = false;
+  const begin = () => {
+    if (started) return;
+    started = true;
+    current = 0;
+    render();
+    stepBtn.classList.add('is-show');
+  };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { begin(); io.disconnect(); } });
+    }, { threshold: 0.3 });
+    io.observe(fig);
+  } else {
+    begin();
+  }
+})();
+
+/* =============================================================
+   Results · graduation-dynamics small multiples
+   Cumulative graduations (graduated / admitted) over training,
+   bucketed by the question's rollout accuracy at admission.
+   Final counts/percentages are real (Fig.); the curve *shapes*
+   are illustrative monotonic interpolations to those endpoints.
+   ============================================================= */
+(() => {
+  const root = document.getElementById('gradCharts');
+  if (!root) return;
+  const NS = 'http://www.w3.org/2000/svg';
+
+  // bucket → { admission label, ZPPO/GRPO final graduated, admitted, percent }
+  const DATA = {
+    '0':    { adm: '0%',    zppo: { g: 432, p: 28 }, grpo: { g: 73,  p: 4  } },
+    '12.5': { adm: '12.5%', zppo: { g: 532, p: 54 }, grpo: { g: 160, p: 14 } },
+    '25':   { adm: '25%',   zppo: { g: 692, p: 62 }, grpo: { g: 450, p: 37 } },
+    '37.5': { adm: '37.5%', zppo: { g: 971, p: 67 }, grpo: { g: 757, p: 51 } },
+  };
+
+  const Y_MAX = 1000, X_MAX = 200;
+  const VB_W = 320, VB_H = 246;
+  const PAD = { left: 52, right: 70, top: 14, bottom: 32 };
+  const PLOT_W = VB_W - PAD.left - PAD.right;
+  const PLOT_H = VB_H - PAD.top - PAD.bottom;
+  const N = 64;
+
+  const xs = (t) => PAD.left + t * PLOT_W;             // t: 0..1 fraction of training
+  const ys = (v) => PAD.top + (1 - v / Y_MAX) * PLOT_H;
+  // gentle S so the rise reads as accumulation, not a ruler-straight line
+  const shape = (t) => { const ss = t * t * (3 - 2 * t); return 0.82 * t + 0.18 * ss; };
+
+  function el(name, attrs, parent) {
+    const node = document.createElementNS(NS, name);
+    for (const k in attrs) node.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(node);
+    return node;
+  }
+  function pathFor(final) {
+    let d = '';
+    for (let i = 0; i <= N; i++) {
+      const t = i / N;
+      d += (i ? ' L' : 'M') + xs(t).toFixed(1) + ',' + ys(final * shape(t)).toFixed(1);
+    }
+    return d;
+  }
+
+  const built = [];
+  root.querySelectorAll('.grad-chart').forEach((c, idx) => {
+    const d = DATA[c.dataset.bucket];
+    if (!d) return;
+
+    const title = document.createElement('div');
+    title.className = 'grad-chart__title';
+    title.innerHTML = 'Initial rollout acc: <b>' + d.adm + '</b>';
+    c.appendChild(title);
+
+    const svg = el('svg', {
+      viewBox: `0 0 ${VB_W} ${VB_H}`, role: 'img',
+      'aria-label': `Admission accuracy ${d.adm}: ZPPO graduates ${d.zppo.g} (${d.zppo.p}%) vs GRPO ${d.grpo.g} (${d.grpo.p}%).`
+    }, c);
+
+    // y gridlines + labels
+    [0, 250, 500, 750, 1000].forEach((v) => {
+      const y = ys(v);
+      el('line', { class: v === 0 ? 'grad-axis' : 'grad-grid', x1: PAD.left, y1: y, x2: VB_W - PAD.right, y2: y }, svg);
+      el('text', { class: 'grad-axis-label', x: PAD.left - 5, y: y + 3, 'text-anchor': 'end' }, svg).textContent = v;
+    });
+    // x labels + title
+    [0, 50, 100, 150, 200].forEach((v) => {
+      el('text', { class: 'grad-axis-label', x: xs(v / X_MAX), y: VB_H - PAD.bottom + 13, 'text-anchor': 'middle' }, svg).textContent = v;
+    });
+    el('text', { class: 'grad-axis-title', x: PAD.left + PLOT_W / 2, y: VB_H - 6, 'text-anchor': 'middle' }, svg).textContent = 'training step';
+    // y-axis title (rotated)
+    const ymid = PAD.top + PLOT_H / 2;
+    el('text', { class: 'grad-axis-title', x: 14, y: ymid, 'text-anchor': 'middle', transform: `rotate(-90 14 ${ymid})` }, svg).textContent = 'cumulative graduations';
+
+    // clipped group so both curves "draw in" left→right (keeps GRPO's dash pattern)
+    const clipId = 'gradClip' + idx;
+    const cr = el('rect', { x: PAD.left - 2, y: 0, width: 0, height: VB_H }, el('clipPath', { id: clipId }, svg));
+    const g = el('g', { 'clip-path': `url(#${clipId})` }, svg);
+    el('path', { class: 'grad-line grad-line--grpo', d: pathFor(d.grpo.g) }, g);
+    el('path', { class: 'grad-line grad-line--zppo', d: pathFor(d.zppo.g) }, g);
+
+    // endpoints (outside the clip; revealed by opacity)
+    const exZ = xs(1), eyZ = ys(d.zppo.g), eyG = ys(d.grpo.g);
+    const dotZ = el('circle', { class: 'grad-dot grad-dot--zppo', cx: exZ, cy: eyZ, r: 3.4 }, svg);
+    const dotG = el('circle', { class: 'grad-dot grad-dot--grpo', cx: exZ, cy: eyG, r: 3.4 }, svg);
+    const labZ = el('text', { class: 'grad-endlabel grad-endlabel--zppo', x: exZ + 7, y: eyZ - 4, 'text-anchor': 'start' }, svg);
+    const labG = el('text', { class: 'grad-endlabel grad-endlabel--grpo', x: exZ + 7, y: eyG + 11, 'text-anchor': 'start' }, svg);
+
+    built.push({ cr, dotZ, dotG, labZ, labG, d });
+  });
+
+  function render(p) {
+    built.forEach((b) => {
+      b.cr.setAttribute('width', String((PLOT_W + 4) * p));
+      b.labZ.textContent = Math.round(b.d.zppo.g * p);
+      b.labG.textContent = Math.round(b.d.grpo.g * p);
+      const ev = p > 0.94 ? 1 : 0;
+      b.dotZ.style.opacity = ev;
+      b.dotG.style.opacity = ev;
+    });
+  }
+
+  const REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  built.forEach((b) => { b.dotZ.style.opacity = 0; b.dotG.style.opacity = 0; });
+  if (REDUCE) { render(1); return; }
+
+  const DRAW = 2300;
+  const easeOut = (t) => 1 - (1 - t) * (1 - t);
+  let raf = 0, t0 = null;
+  function frame(ts) {
+    if (t0 == null) t0 = ts;
+    const p = Math.min(1, (ts - t0) / DRAW);
+    render(easeOut(p));
+    raf = p < 1 ? requestAnimationFrame(frame) : 0;
+  }
+  function play() { cancelAnimationFrame(raf); t0 = null; render(0); raf = requestAnimationFrame(frame); }
+
+  let started = false;
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting && !started) { started = true; play(); io.disconnect(); } });
+    }, { threshold: 0.3 });
+    io.observe(root);
+  } else {
+    play();
+  }
+
+  const replay = document.getElementById('gradReplay');
+  if (replay) replay.addEventListener('click', play);
+})();
+

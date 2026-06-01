@@ -61,8 +61,8 @@
     </a>
     <nav class="nav__links" aria-label="Section nav">
       <a href="#tldr">TL;DR</a>
+      <a href="#approach">Insight</a>
       <a href="#method">Method</a>
-      <a href="#highlight">Highlight</a>
       <a href="#results">Results</a>
       <a href="#qualitative">Qualitative</a>
     </nav>
@@ -71,8 +71,10 @@
       <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.5" y1="4.5" x2="6.6" y2="6.6"/><line x1="17.4" y1="17.4" x2="19.5" y2="19.5"/><line x1="4.5" y1="19.5" x2="6.6" y2="17.4"/><line x1="17.4" y1="6.6" x2="19.5" y2="4.5"/></g></svg>
     </button>
   </div>
-  <div class="nav__progress" id="navProgress"></div>
 </header>
+
+<!-- Vertical scroll-progress rail (right edge of viewport) -->
+<div class="scroll-rail" aria-hidden="true"><div class="scroll-rail__fill" id="navProgress"></div></div>
 
 <!-- ====== Hero ====== -->
 <main id="top">
@@ -281,15 +283,20 @@
       <li><a href="https://shizhediao.github.io/" target="_blank" rel="noopener">Shizhe Diao</a></li>
       <li><a href="https://nardien.github.io/" target="_blank" rel="noopener">Minki Kang</a></li>
       <li><a href="https://www.sauravm.com/" target="_blank" rel="noopener">Saurav Muralidharan</a></li>
-      <li><a href="http://karansapra.com/" target="_blank" rel="noopener">Karan Sapra</a></li>
-      <li><a href="https://research.nvidia.com/person/andrew-tao" target="_blank" rel="noopener">Andrew Tao</a></li>
+      <li><a href="https://developer.nvidia.com/blog/author/ksapra/" target="_blank" rel="noopener">Karan Sapra</a></li>
+      <li><a href="https://developer.nvidia.com/blog/author/atao/" target="_blank" rel="noopener">Andrew Tao</a></li>
       <li><a href="https://www.pmolchanov.com/" target="_blank" rel="noopener">Pavlo Molchanov</a></li>
       <li><a href="https://yejinc.github.io/" target="_blank" rel="noopener">Yejin Choi</a></li>
       <li><a href="http://vllab.ee.ntu.edu.tw/ycwang.html" target="_blank" rel="noopener">Yu-Chiang Frank Wang</a></li>
-      <li><a href="https://ryo-hachiuma.github.io/" target="_blank" rel="noopener">Ryo Hachiuma</a></li>
+      <li><a href="https://ryohachiuma.github.io/" target="_blank" rel="noopener">Ryo Hachiuma</a></li>
     </ol>
     <div class="affiliation">
-      <div class="affiliation__org">NVIDIA</div>
+      <div class="affiliation__org">
+        <svg class="affiliation__logo" viewBox="600 200 1320 1010" role="img" aria-label="NVIDIA" xmlns="http://www.w3.org/2000/svg">
+          <path fill="currentColor" d="M1150.59285,960.68859l.02298,228.63094h64.56792v-228.62701l-64.5909-.00393ZM642.64727,960.3779v228.94162h65.14412v-173.83838l50.466.01728c16.71779,0,28.62371,4.15985,36.67948,12.75549,10.21347,10.88373,14.38197,28.42809,14.38197,60.53646v100.52915l63.10729-.0115.0115-126.47737c0-90.27838-57.54652-102.45276-113.84284-102.45276h-115.94752M1254.55884,960.69624v228.62328h104.72914c55.79947,0,74.01116-9.28043,93.70734-30.08697,13.9236-14.60623,22.91809-46.67061,22.91809-81.71142,0-32.13508-7.6137-60.80492-20.89865-78.65801-23.92104-31.92612-58.3847-38.16689-109.8344-38.16689h-90.62153ZM1318.60869,1010.47761h27.76256c40.2765,0,66.3246,18.08698,66.3246,65.01643,0,46.94103-26.0481,65.02801-66.3246,65.02801h-27.76256v-130.04444ZM1057.49529,960.69624l-53.88823,181.19717-51.63686-181.18559-69.70166-.01159,73.74447,228.62328h93.063l74.32381-228.62328h-65.90453ZM1505.96014,1189.31952h64.57931v-228.61169l-64.59463-.01159.01532,228.62328ZM1686.96948,960.77873l-90.16335,228.46205h63.66847l14.26473-40.37996h106.70459l13.50353,40.37996h69.12643l-90.85169-228.4811-86.25271.01905ZM1728.88364,1002.45916l39.11428,107.03052h-79.46363l40.34935-107.03052Z"/>
+          <path fill="#76b900" d="M1065.22873,425.14577v-54.92689c5.32957-.37764,10.71688-.6626,16.20671-.83601,150.22334-4.72073,248.78057,129.07979,248.78057,129.07979,0,0-106.44633,147.84488-220.57771,147.84488-16.43786,0-31.14868-2.64945-44.40957-7.10172v-166.55441c58.48096,7.06441,70.23929,32.89765,105.40881,91.50382l78.19751-65.93138s-57.08111-74.86559-153.30623-74.86559c-10.47061,0-20.47697.73841-30.30009,1.78751M1065.22873,243.70607v82.0431c5.39104-.42772,10.78876-.76806,16.20671-.96562,208.90854-7.0375,345.01061,171.32778,345.01061,171.32778,0,0-156.33251,190.0968-319.19248,190.0968-14.92371,0-28.89631-1.37804-42.02484-3.70247v50.71342c11.22808,1.42675,22.85778,2.26787,34.99494,2.26787,151.56388,0,261.16891-77.39426,367.30475-169.00355,17.58279,14.09032,89.62866,48.36503,104.44416,63.3874-100.92116,84.47674-336.09264,152.56464-469.4168,152.56464-12.84867,0-25.2054-.77474-37.32704-1.94089v71.27251h576.05304V243.70607h-576.05304ZM1065.22873,639.20582v43.29984c-140.18046-24.99212-179.08606-170.70641-179.08606-170.70641,0,0,67.30211-74.57022,179.08606-86.65348v47.50564c-.08739,0-.14395-.022-.21976-.022-58.65535-7.04516-104.48913,47.76369-104.48913,47.76369,0,0,25.6781,92.2603,104.70889,118.81271M816.2553,505.48484s83.0803-122.59099,248.97342-135.26596v-44.46971c-183.74262,14.74528-342.85899,170.36216-342.85899,170.36216,0,0,90.11413,260.53312,342.85899,284.38323v-47.27548c-185.46867-23.33521-248.97342-227.73423-248.97342-227.73423Z"/>
+        </svg>
+      </div>
       <div class="affiliation__note"><sup>&dagger;</sup>Project Lead</div>
     </div>
 
@@ -303,7 +310,7 @@
             <path d="M14 3v5a1 1 0 0 0 1 1h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
             <path d="M8.5 13.5l6 6M14.5 13.5l-6 6" stroke="#B31B1B" stroke-width="2" stroke-linecap="round"/>
           </svg>
-          Paper <span class="btn__pill">ArXiv</span>
+          Paper <span class="btn__pill">VPN / SSO Needed</span>
         </a>
       </div>
       <div class="cta-col">
@@ -364,6 +371,7 @@
 </section>
 
 <!-- ====== TL;DR ====== -->
+<div class="tldr-band">
 <section class="section" id="tldr">
   <div class="section__head section__head--center">
     <span class="section__kicker section__kicker--xl">TL;DR</span>
@@ -373,7 +381,7 @@
   <div class="perf">
     <header class="perf__head perf__head--center">
       <h3 class="perf__title">
-        Accuracy Gain (Δ pp) at Qwen3.5
+        Accuracy Gain (Δ pp)
       </h3>
 
       <div class="perf__controls">
@@ -391,8 +399,6 @@
             <div class="perf__sizes-group">
               <button class="perf__size is-active" type="button" role="radio" aria-checked="true"  data-size="0.8B">0.8B</button>
               <button class="perf__size"           type="button" role="radio" aria-checked="false" data-size="2B">2B</button>
-              <button class="perf__size"           type="button" role="radio" aria-checked="false" data-size="4B">4B</button>
-              <button class="perf__size"           type="button" role="radio" aria-checked="false" data-size="9B">9B</button>
             </div>
           </div>
         </div>
@@ -423,15 +429,15 @@
 
       <div class="perf__row" data-method="off" role="row">
         <span class="perf__method" role="rowheader">Off-Policy Distill<sup>†</sup></span>
-        <span class="perf__cell" data-sign="neg" role="cell">
+        <span class="perf__cell" data-label="LLM" data-sign="neg" role="cell">
           <span class="perf__val" data-final="-2.7">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--neg" style="--w:29.0%"></span></span>
         </span>
-        <span class="perf__cell" data-sign="pos" role="cell">
+        <span class="perf__cell" data-label="VLM" data-sign="pos" role="cell">
           <span class="perf__val" data-final="+0.5">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:5.4%"></span></span>
         </span>
-        <span class="perf__cell" data-sign="neg" role="cell">
+        <span class="perf__cell" data-label="Video" data-sign="neg" role="cell">
           <span class="perf__val" data-final="-3.3">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--neg" style="--w:35.5%"></span></span>
         </span>
@@ -439,15 +445,15 @@
 
       <div class="perf__row" data-method="on" role="row">
         <span class="perf__method" role="rowheader">On-Policy Distill<sup>†</sup></span>
-        <span class="perf__cell" data-sign="neg" role="cell">
+        <span class="perf__cell" data-label="LLM" data-sign="neg" role="cell">
           <span class="perf__val" data-final="-2.0">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--neg" style="--w:21.5%"></span></span>
         </span>
-        <span class="perf__cell" data-sign="pos" role="cell">
+        <span class="perf__cell" data-label="VLM" data-sign="pos" role="cell">
           <span class="perf__val" data-final="+1.3">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:14.0%"></span></span>
         </span>
-        <span class="perf__cell" data-sign="neg" role="cell">
+        <span class="perf__cell" data-label="Video" data-sign="neg" role="cell">
           <span class="perf__val" data-final="-2.5">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--neg" style="--w:26.9%"></span></span>
         </span>
@@ -455,31 +461,47 @@
 
       <div class="perf__row" data-method="grpo" role="row">
         <span class="perf__method" role="rowheader">GRPO<sup>†</sup></span>
-        <span class="perf__cell" data-sign="pos" role="cell">
+        <span class="perf__cell" data-label="LLM" data-sign="pos" role="cell">
           <span class="perf__val" data-final="+3.5">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:37.6%"></span></span>
         </span>
-        <span class="perf__cell" data-sign="pos" role="cell">
+        <span class="perf__cell" data-label="VLM" data-sign="pos" role="cell">
           <span class="perf__val" data-final="+4.4">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:47.3%"></span></span>
         </span>
-        <span class="perf__cell" data-sign="pos" role="cell">
+        <span class="perf__cell" data-label="Video" data-sign="pos" role="cell">
           <span class="perf__val" data-final="+2.2">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:23.7%"></span></span>
         </span>
       </div>
 
+      <div class="perf__row" data-method="prefix" role="row">
+        <span class="perf__method" role="rowheader">GRPO<sup>†</sup> + Teacher response</span>
+        <span class="perf__cell" data-label="LLM" data-sign="pos" role="cell">
+          <span class="perf__val" data-final="+1.9">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:20.4%"></span></span>
+        </span>
+        <span class="perf__cell" data-label="VLM" data-sign="pos" role="cell">
+          <span class="perf__val" data-final="+4.5">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:48.4%"></span></span>
+        </span>
+        <span class="perf__cell" data-label="Video" data-sign="pos" role="cell">
+          <span class="perf__val" data-final="+0.8">0.0</span>
+          <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--pos" style="--w:8.6%"></span></span>
+        </span>
+      </div>
+
       <div class="perf__row perf__row--zppo" data-method="zppo" role="row">
         <span class="perf__method" role="rowheader"><strong>ZPPO</strong><span class="perf__method-ours">(Ours)</span></span>
-        <span class="perf__cell" data-sign="pos" role="cell">
+        <span class="perf__cell" data-label="LLM" data-sign="pos" role="cell">
           <span class="perf__val" data-final="+7.9">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--zppo" style="--w:84.9%"></span></span>
         </span>
-        <span class="perf__cell" data-sign="pos" role="cell">
+        <span class="perf__cell" data-label="VLM" data-sign="pos" role="cell">
           <span class="perf__val" data-final="+9.3">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--zppo" style="--w:100%"></span></span>
         </span>
-        <span class="perf__cell" data-sign="pos" role="cell">
+        <span class="perf__cell" data-label="Video" data-sign="pos" role="cell">
           <span class="perf__val" data-final="+4.5">0.0</span>
           <span class="perf__bar"><span class="perf__zero"></span><span class="perf__fill perf__fill--zppo" style="--w:48.4%"></span></span>
         </span>
@@ -487,7 +509,7 @@
     </div>
 
     <p class="perf__foot">
-      <span class="perf__legend"><span class="perf__legend-dagger">†</span>: prompt replay buffer</span>
+      †: prompt replay buffer<span class="perf__foot-sep"> · </span>all experiments run on Qwen3.5
     </p>
   </div>
 
@@ -529,49 +551,306 @@
        the headline takeaway its full motivational arc. -->
   <div class="prs">
     <div class="prs__card prs__card--problem">
-      <header class="prs__head">
+      <button class="prs__head prs__head--toggle" type="button" aria-expanded="false" aria-controls="problemTakeaway">
         <span class="prs__dot" aria-hidden="true"></span>
         <span class="prs__tag">Problem</span>
-      </header>
-      <ul class="prs__list">
-        <li><strong>Distillation</strong> forces a small student to imitate a giant teacher's logits, and it induces <strong>memorization</strong>, <strong>degrading generalization</strong>.</li>
-        <li>The natural alternative <strong>GRPO</strong> is <strong>single-model</strong> with no slot for a teacher — forcing one in creates an <strong>off-policy mismatch</strong> and <strong>policy drift</strong>, degrading generalization again.</li>
-        <li>And even without the teacher, plain GRPO can't recover a learning signal on <strong>hard questions</strong>: when every student rollout fails, the advantage collapses to <strong>zero</strong> and the question is silently <strong>discarded</strong>.</li>
-      </ul>
+        <span class="prs__head-right">
+          <span class="prs__head-hint">Please click if you want to know the problem</span>
+          <span class="prs__tap" aria-hidden="true">👉</span>
+          <svg class="prs__head-caret" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+      <div class="takeaway" id="problemTakeaway" aria-roledescription="carousel" aria-label="Problems">
+        <div class="takeaway__reveal">
+        <div class="takeaway__viewport">
+          <div class="takeaway__track">
+            <article class="takeaway__slide is-active" role="group" aria-roledescription="slide">
+              <div class="takeaway__head">
+                <span class="takeaway__num">1 / 3</span>
+                <span class="takeaway__ref"><span class="takeaway__chip">Off-Policy Distill<sup>†</sup></span> and <span class="takeaway__chip">On-Policy Distill<sup>†</sup></span></span>
+              </div>
+              <p>Distillation forces a student to imitate teacher logits, inducing <strong>memorization on the training samples</strong> while <strong>degrading generalization</strong> on unseen samples. (Overfitting on dataset and teacher)</p>
+            </article>
+            <article class="takeaway__slide" role="group" aria-roledescription="slide">
+              <div class="takeaway__head">
+                <span class="takeaway__num">2 / 3</span>
+                <span class="takeaway__ref"><span class="takeaway__chip">GRPO<sup>†</sup></span></span>
+              </div>
+              <p>RL lets model have freedom of responding the question until they solve it, encouraging <strong>reasoning exploration via self-reflection like "Wait, that step looks wrong — let me re-check."</strong> (Not forced to imitate any response) — <strong>preserving generalization</strong>. However, RL can't learn how to solve <strong>hard questions</strong> whose rollout accuracy is near zero — they are <strong>discarded forever</strong>.</p>
+            </article>
+            <article class="takeaway__slide" role="group" aria-roledescription="slide">
+              <div class="takeaway__head">
+                <span class="takeaway__num">3 / 3</span>
+                <span class="takeaway__ref"><span class="takeaway__chip">GRPO<sup>†</sup> + Teacher response</span></span>
+              </div>
+              <p>To solve hard questions, some RL methods naively inject the teacher's response into the student — as if it were the student's own response — breaking the <strong>on-policy assumption</strong>, <strong>degrading generalization again</strong>.</p>
+            </article>
+          </div>
+        </div>
+        </div>
+        <div class="takeaway__controls">
+          <button class="takeaway__nav takeaway__nav--prev" type="button" aria-label="Previous problem">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="takeaway__dots" role="tablist" aria-label="Choose problem"></div>
+          <button class="takeaway__nav takeaway__nav--next" type="button" aria-label="Next problem">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
+    <p class="takeaway__hint is-hidden" aria-hidden="true"><span class="takeaway__hint-touch">Swipe</span><span class="takeaway__hint-keys">Use <kbd>←</kbd> <kbd>→</kbd> or the arrows</span> to browse problems</p>
 
-    <div class="prs__card prs__card--question">
-      <header class="prs__head">
-        <span class="prs__dot" aria-hidden="true"></span>
-        <span class="prs__tag">Research Question</span>
-      </header>
-      <p>
-        How can we transfer the teacher's knowledge to the student <em>without</em> ever imitating the teacher's <strong>logits</strong> or injecting the teacher's response directly into the student's <strong>policy gradient</strong>?
-      </p>
-    </div>
-
-    <div class="prs__card prs__card--solution">
-      <header class="prs__head">
-        <span class="prs__dot" aria-hidden="true"></span>
-        <span class="prs__tag">Solution</span>
-      </header>
-      <p>
-        Keep the teacher inside the <strong class="hl-good">prompt</strong>, never the gradient — <strong>BCQ</strong> pairs one correct teacher trace with one wrong student trace as anonymised candidates, <strong>NCQ</strong> confronts the student with all of its own wrong rollouts, and a <strong>prompt replay buffer</strong> re-exposes each hard question until the student <em>graduates</em>.
-      </p>
-    </div>
   </div>
 </section>
+</div>
+
+<!-- Research Question — the paper's central question, posed as a pull-quote
+     that bridges the Problem (TL;DR, above) and the Method (below). -->
+<div class="rq-band" id="approach">
+  <!-- Section title (matches the TL;DR pill) with the Skip control on its right. -->
+  <div class="rq-band__head">
+    <span class="section__kicker section__kicker--xl">Insight</span>
+    <button class="rq__skip" type="button" id="rqSkip" aria-label="Skip the animation">
+      Skip animation <span class="rq__skip-note">(I don't have time)</span>
+    </button>
+  </div>
+  <section class="rq" aria-label="Research question">
+
+    <!-- Question panel: badge straddles the top of its own box; the big
+         quotation marks bracket the question. -->
+    <div class="rq__panel">
+      <span class="rq__kicker">Research Question</span>
+      <div class="rq__box rq__box--quote">
+        <blockquote class="rq__quote">
+          For <strong class="rq__hard">hard questions</strong>, how can we transfer the teacher's knowledge to the student<b class="rqp" aria-hidden="true"></b> without imitating the teacher's logits<b class="rqp" aria-hidden="true"></b> or injecting the teacher's response directly into the student's gradient?<b class="rqp" aria-hidden="true"></b><span class="rq__punch">How to make the student solve the hard question without <strong>policy drift</strong> <span class="rq__punch-note">(degrading generalization)</span>?</span>
+        </blockquote>
+      </div>
+    </div>
+
+    <!-- Inspiration: the Zone of Proximal Development that motivates ZPPO. -->
+    <div class="rq__inspiration" id="rqInspiration" aria-hidden="true">
+      <div class="rq__inspiration-inner">
+        <svg class="rq__solution-arrow" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="rq__panel">
+          <span class="rq__kicker rq__kicker--insp">Inspiration</span>
+          <div class="rq__box">
+            <p class="zpd__ref" id="zpdRef">Vygotsky, L. S. (1978). <a href="https://doi.org/10.2307/j.ctvjf9vz4" target="_blank" rel="noopener"><em>Mind in Society</em></a>. Harvard University Press. <a class="zpd__cites" href="https://scholar.google.com/scholar?q=Vygotsky+Mind+in+Society+1978" target="_blank" rel="noopener" title="View on Google Scholar"><strong>200,000+</strong>&nbsp;citations</a></p>
+            <p class="zpd__intro" id="zpdIntro">The concept of <strong>zones</strong> is proposed, where <strong>Zone of Proximal Development</strong> is introduced to help solving the hard question by an educational approach.</p>
+            <div class="zpd">
+              <figure class="zpd__author">
+                <img src="assets/vygotsky.jpg" alt="Lev Vygotsky" loading="lazy"/>
+                <figcaption><a class="zpd__name" href="https://scholar.google.com/citations?user=2dGPU38AAAAJ&amp;hl=en" target="_blank" rel="noopener">Lev Vygotsky</a><span class="zpd__credit">Professor of Psychology</span></figcaption>
+              </figure>
+              <div class="zpd__right">
+                <svg class="zpd__svg" viewBox="0 0 300 300" role="img" aria-label="Vygotsky's Zone of Proximal Development: the outer ring is what a learner can't do even with help, the middle ring (the ZPD) is what they can do with help, and the inner circle is what they can already do alone.">
+                  <circle class="zpd__ring zpd__ring--anx" cx="150" cy="150" r="146"/>
+                  <circle class="zpd__ring zpd__ring--learn" cx="150" cy="150" r="106"/>
+                  <circle class="zpd__ring zpd__ring--comfort" cx="150" cy="150" r="56"/>
+                  <text class="zpd__t zpd__t--out" x="150" y="30" text-anchor="middle">Can't do</text>
+                  <text class="zpd__t zpd__t--mid" x="150" y="82" text-anchor="middle">Can do with help</text>
+                  <text class="zpd__t zpd__t--in" x="150" y="156" text-anchor="middle">Can do alone</text>
+                </svg>
+                <ul class="zpd__legend">
+                  <li><span class="zpd__sw zpd__sw--anx"></span><span><strong>Can't do</strong>Too hard, even with help</span></li>
+                  <li class="zpd__legend-hl zpd__legend-target"><span class="zpd__sw zpd__sw--learn"></span><span><strong>Can do with help</strong><span class="zpd-hl">Zone of Proximal Development</span><br>reached with educational help</span><span class="zpd__target" aria-hidden="true">◎ target</span></li>
+                  <li><span class="zpd__sw zpd__sw--comfort"></span><span><strong>Can do alone</strong>Easy enough without help</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Through Our Lens: revealed as its own animated step after Inspiration. -->
+        <div class="rq__lens-wrap" id="rqLens" aria-hidden="true">
+        <div class="rq__lens-inner">
+        <svg class="rq__solution-arrow" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="rq__panel">
+          <span class="rq__kicker rq__kicker--ours">Through Our Lens</span>
+          <div class="rq__box">
+            <p class="zpd__intro" id="lensIntro">The same three zones, reinterpreted as <strong>rollout accuracy</strong>.</p>
+            <div class="zpd zpd--ours">
+              <figure class="zpd__author">
+                <img id="bkPhoto" src="assets/byungkwan.jpg" alt="Byung-Kwan Lee" loading="lazy"/>
+                <figcaption><span class="zpd__name"><a href="https://byungkwanlee.github.io/ByungKwanLee-CV/" target="_blank" rel="noopener">Byung-Kwan Lee</a> <em class="zpd__etal">et al.</em></span><svg class="zpd__credit-logo" viewBox="200 560 2160 320" role="img" aria-label="NVIDIA"><path fill="#76b900" d="M436.93785,640.78361v-35.49175c3.4459-.24553,6.92613-.42918,10.4726-.54024,97.07249-3.05104,160.75618,83.40761,160.75618,83.40761,0,0-68.78225,95.53503-142.53101,95.53503-10.62215,0-20.12751-1.71234-28.69777-4.58826v-107.62396c37.79122,4.56486,45.3879,21.25692,68.11388,59.12728l50.52954-42.60379s-36.88389-48.37696-99.0625-48.37696c-6.76609,0-13.23133.47815-19.58092,1.15504M436.93785,523.54106v53.0144c3.48438-.27548,6.97313-.49739,10.4726-.62333,134.99401-4.54781,222.93894,110.70911,222.93894,110.70911,0,0-101.01819,122.83652-206.25515,122.83652-9.64223,0-18.67162-.89028-27.15639-2.39142v32.76954c7.25714.92242,14.77052,1.46463,22.61492,1.46463,97.93719,0,168.75864-50.01037,237.34237-109.20595,11.3631,9.10406,57.91698,31.25152,67.49078,40.95975-65.2126,54.58595-217.17638,98.58388-303.32785,98.58388-8.30134,0-16.28653-.50177-24.12021-1.25321v46.05397h372.23407v-392.91789h-372.23407ZM436.93785,779.10599v27.98036c-90.57969-16.14985-115.72071-110.3077-115.72071-110.3077,0,0,43.48994-48.18696,115.72071-55.99504v30.69842c-.05553,0-.09183-.01487-.14102-.01487-37.90229-4.55218-67.51832,30.86283-67.51832,30.86283,0,0,16.59175,59.61825,67.65934,76.776M276.05771,692.6985s53.68509-79.21639,160.88014-87.40665v-28.7364c-118.72891,9.52895-221.54711,110.08578-221.54711,110.08578,0,0,58.23072,168.35047,221.54711,183.76373v-30.54909c-119.84569-15.0781-160.88014-147.15739-160.88014-147.15739Z"/><path fill="currentColor" d="M1479.66576,597.78723l.02592,257.90666h72.83585v-257.90223l-72.86177-.00443ZM906.67774,597.43677v258.25712h73.48583v-196.09803l56.92818.01949c18.8585,0,32.28898,4.69251,41.37629,14.3888,11.5213,12.27737,16.22358,32.06825,16.22358,68.28803v113.4017l71.18818-.01297.01297-142.67253c0-101.83834-64.91535-115.57162-128.42042-115.57162h-130.7946M1596.94459,597.79587v257.89802h118.13971c62.94459,0,83.48829-10.46877,105.70657-33.93954,15.70652-16.47653,25.85275-52.64668,25.85275-92.1744,0-36.24991-8.58863-68.59087-23.57472-88.73-26.98413-36.0142-65.86086-43.05408-123.8987-43.05408h-102.22561ZM1669.19603,653.95164h31.31755c45.4339,0,74.81747,20.40298,74.81747,73.34165,0,52.95174-29.38356,73.35472-74.81747,73.35472h-31.31755v-146.69636ZM1374.64705,597.79587l-60.78862,204.3991-58.24896-204.38603-78.62696-.01307,83.18745,257.89802h104.97972l83.84098-257.89802h-74.3436ZM1880.53784,855.69389h72.84869v-257.88495l-72.86597-.01307.01728,257.89802ZM2084.72543,597.88892l-101.70877,257.71614h71.82122l16.09133-45.55054h120.36811l15.23266,45.55054h77.97807l-102.48525-257.73763-97.29737.02149ZM2132.0067,644.90644l44.12286,120.73556h-89.63895l45.51609-120.73556Z"/></svg></figcaption>
+              </figure>
+              <div class="zpd__right">
+                <svg class="zpd__svg" viewBox="0 0 300 300" role="img" aria-label="The same three zones read as rollout accuracy: the outer ring is where rollout accuracy stays zero even with help, the middle ring (where ZPPO trains) is where accuracy is low but rises with help, and the inner circle is where accuracy is already high.">
+                  <circle class="zpd__ring zpd__ring--anx" cx="150" cy="150" r="146"/>
+                  <circle class="zpd__ring zpd__ring--learn" cx="150" cy="150" r="106"/>
+                  <circle class="zpd__ring zpd__ring--comfort" cx="150" cy="150" r="56"/>
+                  <text class="zpd__t zpd__t--out" x="150" y="30" text-anchor="middle">Can't do</text>
+                  <text class="zpd__t zpd__t--mid" x="150" y="82" text-anchor="middle">Can do with help</text>
+                  <text class="zpd__t zpd__t--in" x="150" y="156" text-anchor="middle">Can do alone</text>
+                </svg>
+                <ul class="zpd__legend zpd__legend--rl">
+                  <li><span class="zpd__sw zpd__sw--anx"></span><span><strong>Can't do</strong>Rollout accuracy is <span class="rl-no">zero</span><br>no matter how we help.</span></li>
+                  <li class="zpd__legend-hl zpd__legend-target"><span class="zpd__sw zpd__sw--learn"></span><span><strong>Can do with help</strong><span class="rl-zppo">Zone of Proximal Policy Optimization</span>Rollout accuracy is <span class="rl-no">zero or low</span><br>but its accuracy <span class="rl-up">rises with help</span>.</span><span class="zpd__target" aria-hidden="true">◎ target</span></li>
+                  <li><span class="zpd__sw zpd__sw--comfort"></span><span><strong>Can do alone</strong>Rollout accuracy is <span class="rl-up">already high</span>.</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Solution panel: same box design, expands in + types out after the
+         question finishes. -->
+    <div class="rq__solution" id="rqSolution" aria-hidden="true">
+      <div class="rq__solution-inner">
+        <svg class="rq__solution-arrow" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="rq__panel">
+          <span class="rq__kicker rq__kicker--solution">Solution</span>
+          <div class="rq__box">
+            <div class="rq__diagram" role="img" aria-label="How BCQ and NCQ reformulate a hard question: BCQ appends one correct teacher response and one wrong student response as shuffled, anonymized candidates; NCQ appends all of the student's wrong responses and instructs that none is correct. In both, the student re-solves the prompt so its own response stays on-policy.">
+              <div class="dh">
+                <!-- One shared hard question forks into two side-by-side cases -->
+                <div class="dh__intro">
+                  <span class="dh__intro-line">If a <strong>hard question</strong> <span class="dh__hard-def">(rollout accuracy near zero)</span> is given, we are doing</span>
+                  <div class="dh__intro-row">
+                    <span class="dh__qpill">Question Reformulation</span>
+                    <span class="dh__intro-line dh__intro-line--post">— causing no <strong>policy drift</strong>!</span>
+                  </div>
+                </div>
+                <svg class="dh__fork-svg" viewBox="0 0 400 48" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                  <defs>
+                    <marker id="dhForkBcq" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+                      <path d="M0,0 L10,5 L0,10 z" fill="#22d3ee"/>
+                    </marker>
+                    <marker id="dhForkNcq" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+                      <path d="M0,0 L10,5 L0,10 z" fill="#e879f9"/>
+                    </marker>
+                  </defs>
+                  <path class="dh__fork-path dh__fork-path--bcq" d="M200 5 C 175 34, 80 24, 36 43" fill="none" stroke="#22d3ee" stroke-width="1.6" stroke-linecap="round" marker-end="url(#dhForkBcq)"/>
+                  <path class="dh__fork-path dh__fork-path--ncq" d="M200 5 C 225 34, 320 24, 364 43" fill="none" stroke="#e879f9" stroke-width="1.6" stroke-linecap="round" marker-end="url(#dhForkNcq)"/>
+                </svg>
+
+                <div class="dh__grid">
+                <!-- ===== BCQ : teacher can solve (left) ===== -->
+                <div class="dh__branch dh__branch--bcq">
+                  <div class="dh__case dh__case--ok">If Teacher Can Solve</div>
+                  <div class="dh__label dh__label--bcq"><span class="dh__pill dh__pill--bcq">BCQ</span> <span class="dh__label-t">Binary Candidate-included Question</span></div>
+                  <div class="dh__card dh__card--bcq">
+                    <div class="dh__field">
+                      <span class="dh__field-k">Question</span>
+                      <p class="dh__qtext">⟨ original question ⟩</p>
+                    </div>
+                    <p class="dh__instr">Here are two responses to the question above. <strong>One is correct and another is wrong.</strong> Use these as references to help you solve the problem.</p>
+                    <div class="dh__cands">
+                      <span class="dh__shuffle-tag" aria-hidden="true">⇅ shuffle</span>
+                      <div class="dh__cand dh__cand--ok">
+                        <span class="dh__cand-ph">{Correct Teacher Response}</span>
+                      </div>
+                      <div class="dh__cand dh__cand--no">
+                        <span class="dh__cand-ph">{Wrong Student Response}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ===== NCQ : teacher can't solve (right) ===== -->
+                <div class="dh__branch dh__branch--ncq">
+                  <div class="dh__case dh__case--no">If Teacher Can't Solve</div>
+                  <div class="dh__label dh__label--ncq"><span class="dh__pill dh__pill--ncq">NCQ</span> <span class="dh__label-t">Negative Candidate-included Question</span></div>
+                  <div class="dh__card dh__card--ncq">
+                    <div class="dh__field">
+                      <span class="dh__field-k">Question</span>
+                      <p class="dh__qtext">⟨ original question ⟩</p>
+                    </div>
+                    <p class="dh__instr">Below are the <strong>incorrect</strong> reasoning processes.</p>
+                    <div class="dh__cands">
+                      <div class="dh__cand dh__cand--no"><span class="dh__cand-ph">{Wrong Student Response}</span></div>
+                      <div class="dh__cand dh__cand--no"><span class="dh__cand-ph">{Wrong Student Response}</span></div>
+                      <span class="dh__dots">⋮</span>
+                      <div class="dh__cand dh__cand--no"><span class="dh__cand-ph">{Wrong Student Response}</span></div>
+                    </div>
+                  </div>
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Effect: what BCQ and NCQ each do to the student (typed after the Solution). -->
+    <div class="rq__effect" id="rqEffect" aria-hidden="true">
+      <div class="rq__effect-inner">
+        <svg class="rq__solution-arrow" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="rq__panel">
+          <span class="rq__kicker rq__kicker--effect">Effect</span>
+          <div class="rq__box">
+            <div class="effect__grid">
+              <div class="effect__card effect__card--bcq">
+                <span class="dh__pill dh__pill--bcq">BCQ</span>
+                <p class="effect__text" id="effectBcq">BCQ asks the student to solve the problem afresh while consulting the two candidates, <strong>thinking and reasoning out which one is correct</strong>.</p>
+              </div>
+              <div class="effect__card effect__card--ncq">
+                <span class="dh__pill dh__pill--ncq">NCQ</span>
+                <p class="effect__text" id="effectNcq">For the first time, the student confronts all of its own failed attempts at once — cued to <strong>recognize the shared error patterns and avoid them</strong>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<!-- Solution is now fully detailed by the Method section below; the one-line
+     teaser card is kept here (commented out) in case it's wanted again.
+  <div class="prs__card prs__card--solution">
+    <header class="prs__head">
+      <span class="prs__dot" aria-hidden="true"></span>
+      <span class="prs__tag">Solution</span>
+    </header>
+    <p>Keep the teacher response inside the <strong class="hl-good">prompt</strong>, never the gradient, avoiding policy drift.</p>
+  </div>
+-->
 
 <!-- ====== Method ====== -->
 <section class="section" id="method">
   <div class="section__head">
-    <span class="section__kicker">method</span>
-    <h2 class="section__title">Three components that <em>compound</em>.</h2>
-    <p class="section__lede">
-      BCQ &amp; NCQ recover a learning signal on hard questions; the prompt replay buffer keeps each hard question in the student's zone until it graduates.
-    </p>
+    <span class="section__kicker section__kicker--xl">method</span>
+    <p class="section__lede">Technically, we use a <strong class="hl-good-text">Replay Buffer</strong> to store <strong class="hl-bad-text">hard questions</strong>, so the model revisits each <strong class="hl-bad-text">hard question</strong> many times — not just once, as in GRPO. Repeated exposure strengthens the BCQ/NCQ effect on each <strong class="hl-bad-text">hard question</strong>, which we expect to lift its <strong class="hl-good-text">rollout accuracy</strong>.</p>
   </div>
 
+  <!-- Method figure from the paper. Place the image at assets/figures/figure2.png. -->
+  <figure class="figure figure--wide" id="methodFigure" style="max-width: min(1040px, 100%); margin-left: auto; margin-right: auto;">
+    <div class="methodfig__media">
+      <img src="assets/figures/figure2.png"
+           alt="ZPPO method overview: questions are sampled (new + replayed); the teacher and student roll out answers; the teacher-correct plus a student-wrong rollout form a BCQ prompt and the student's wrong rollouts form an NCQ prompt; hard questions are kept in the prompt replay buffer."
+           loading="lazy"
+           onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'figure__ph',textContent:'Add the method figure at assets/figures/figure2.png'}))">
+      <!-- Shown over the empty lower region while (b)+(c) are revealed. -->
+      <div class="methodfig__bc" aria-hidden="true">
+        <ol class="methodfig__steps">
+        <li>This question has a <strong>teacher-correct</strong> rollout, so we build a <strong class="hl-cyan-text">BCQ</strong> — as in (b).</li>
+        <li>This question has many <strong>student-wrong</strong> rollouts, so we also build an <strong class="hl-magenta-text">NCQ</strong> — as in (c).</li>
+        </ol>
+      </div>
+    </div>
+    <div class="methodfig__intro" aria-hidden="true">
+      <ol class="methodfig__steps">
+        <li>A <strong>Batch</strong> is formed from new questions (<strong>Database</strong>) and replayed questions (<strong>Replay Buffer</strong> — stores hard questions).</li>
+        <li>A question is sampled from the batch, and both the <strong>Student</strong> and <strong>Teacher</strong> run rollouts on it.</li>
+        <li>If the question's <strong>student rollout accuracy</strong> is <strong>below 50%</strong>, it is admitted into the <strong>Replay Buffer</strong>.</li>
+      </ol>
+    </div>
+    <figcaption>
+      <ol class="methodfig__steps methodfig__steps--cap">
+        <li><strong class="hl-good-text">Batch</strong> includes new questions, replayed questions, <strong class="hl-cyan-text">BCQ</strong>, and <strong class="hl-magenta-text">NCQ</strong> — <strong class="hl-good-text">Student</strong> is <strong class="hl-good-text">RL-trained</strong> on them.</li>
+      </ol>
+    </figcaption>
+  </figure>
+
+  <!-- Method body hidden for step-by-step redesign — unwrap this <template> to restore. -->
+  <template>
   <figure class="figure figure--wide">
     <img src="assets/figures/figure_high_concept.png" alt="High concept: two RL failure modes and how BCQ/NCQ fix them." loading="lazy"/>
     <figcaption>
@@ -805,8 +1084,33 @@
       </div>
     </div>
   </div>
+  </template>
 </section>
 
+<!-- ====== Results (graduation dynamics) ====== -->
+<section class="section" id="results">
+  <div class="section__head section__head--center">
+    <span class="section__kicker section__kicker--xl">results</span>
+    <p class="section__lede">A question is admitted to the <strong class="hl-good-text">Replay Buffer</strong> when its rollout accuracy stays <strong class="hl-bad-text">below 50%</strong>, and it <strong class="hl-good-text">graduates</strong> — leaving the buffer — once that accuracy reaches <strong class="hl-good-text">50%</strong>. ZPPO graduates far more hard questions than GRPO, and the gap is widest where the initial accuracy starts near <strong class="hl-bad-text">zero</strong>.</p>
+  </div>
+
+  <div class="grad" id="gradCharts">
+    <div class="grad__legend" aria-hidden="true">
+      <span class="grad__leg grad__leg--zppo"><span class="grad__swatch"></span><strong>ZPPO</strong> (GRPO + Replay Buffer + BCQ/NCQ)</span>
+      <span class="grad__leg grad__leg--grpo"><span class="grad__swatch"></span>GRPO + Replay Buffer</span>
+    </div>
+    <div class="grad__grid">
+      <div class="grad-chart" data-bucket="0"></div>
+      <div class="grad-chart" data-bucket="12.5"></div>
+      <div class="grad-chart" data-bucket="25"></div>
+      <div class="grad-chart" data-bucket="37.5"></div>
+    </div>
+    <button class="grad__replay" type="button" id="gradReplay" aria-label="Replay the animation"><span class="grad__replay-ic" aria-hidden="true">&#x21bb;</span> Replay</button>
+  </div>
+</section>
+
+<!-- Highlight hidden for step-by-step redesign — unwrap this <template> to restore. -->
+<template>
 <!-- ====== Highlight ====== -->
 <section class="section" id="highlight">
   <div class="section__head">
@@ -835,7 +1139,10 @@
     </figcaption>
   </figure>
 </section>
+</template>
 
+<!-- Results hidden for step-by-step redesign — unwrap this <template> to restore. -->
+<template>
 <!-- ====== Results ====== -->
 <section class="section" id="results">
   <div class="section__head">
@@ -894,16 +1201,13 @@
     <p class="hintprefix__caption">BCQ alone already beats both Hint and Prefix; the full ZPPO recipe opens the widest gap.</p>
   </div>
 </section>
+</template>
 
 <!-- ====== Qualitative ====== -->
 <section class="section" id="qualitative">
   <div class="section__head">
-    <span class="section__kicker">qualitative</span>
-    <h2 class="section__title">Worked examples: <em>BCQ</em> + <em>NCQ</em> on hard questions.</h2>
-    <p class="section__lede">
-      Real ZPPO-77K questions where the student fails on every plain rollout (<span class="math">r̄<sub>x</sub> = 0</span>), and the BCQ / NCQ reformulated prompts recover a correct answer — except for the 0.8B straws case, where NCQ alone is not enough.
-      <span class="kbd-hint">Use <kbd>←</kbd> <kbd>→</kbd> or swipe.</span>
-    </p>
+    <span class="section__kicker section__kicker--xl">qualitative</span>
+    <h2 class="section__title"><em class="hl-cyan">BCQ</em> + <em class="hl-magenta">NCQ</em> on hard questions.</h2>
   </div>
 
   <div class="qual" id="qualCarousel" tabindex="0" aria-roledescription="carousel">
@@ -930,7 +1234,7 @@
       </svg>
     </div>
     <div class="footer__meta">
-      <p>© NVIDIA — Research preview. <span class="footer__sep">·</span> Project page by <a href="https://byungkwanlee.github.io/ByungKwanLee-CV/" target="_blank" rel="noopener">Byung-Kwan Lee</a>.</p>
+      <p>© 2026 NVIDIA Research — NVIDIA Technical Patent Filed, 2026.</p>
     </div>
     <a class="footer__top" href="#top" aria-label="Back to top">
       <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>

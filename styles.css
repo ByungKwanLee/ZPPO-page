@@ -169,15 +169,26 @@ html[data-theme="dark"] .icon-moon { display: none; }
 html[data-theme="light"] .icon-sun { display: none; }
 html[data-theme="light"] .icon-moon { display: block; }
 
-.nav__progress {
-  position: absolute;
-  bottom: -1px; left: 0;
-  height: 2px;
-  width: 0%;
-  background: linear-gradient(90deg, var(--nv), #c5ff3a);
-  box-shadow: 0 0 10px var(--nv-glow);
-  transition: width 80ms linear;
+/* Vertical scroll-progress rail pinned to the right edge of the viewport. */
+.scroll-rail {
+  position: fixed;
+  top: 0; right: 0;
+  width: 4px;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 60;
+  background: var(--line);
+  pointer-events: none;
 }
+.scroll-rail__fill {
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, var(--nv), #c5ff3a);
+  box-shadow: 0 0 10px var(--nv-glow);
+  transition: height 80ms linear;
+}
+@media (max-width: 640px) { .scroll-rail { width: 3px; } }
+@media (prefers-reduced-motion: reduce) { .scroll-rail__fill { transition: none; } }
 
 /* ---------- Hero ---------- */
 .hero {
@@ -666,15 +677,20 @@ html[data-theme="light"] .hero__hl--bad {
   list-style: none;
   margin: 40px auto 8px;
   padding: 32px 0 0;
-  max-width: 1040px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  justify-content: center;
+  /* Wider track + slightly smaller type so all 11 names fit on a balanced
+     2 lines on laptops/desktops (instead of spilling a lone name onto a 3rd). */
+  max-width: 1160px;
+  /* Inline flow + text-wrap: balance so the browser distributes the names
+     evenly across lines (no lone "orphan" name). Each name is kept whole via
+     white-space: nowrap on the <li>. */
+  display: block;
+  text-align: center;
+  text-wrap: balance;
+  line-height: 1.7;
   /* Unified site font (Rubik) — a clean modern sans that stands in for the
      proprietary NVIDIA Sans across the whole page. */
   font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
-  font-size: clamp(16px, 1.95vw, 21px);
+  font-size: clamp(16px, 1.85vw, 21px);
   letter-spacing: 0.002em;
   position: relative;
 }
@@ -726,12 +742,13 @@ html[data-theme="light"] .authors::before {
 }
 .authors li {
   color: var(--fg-2);
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0;
+  display: inline;
+  /* Keep each name (and its dagger) whole; line breaks only happen between
+     authors, never inside a name. */
+  white-space: nowrap;
 }
-/* Bullet separator between every author except the last; the row wraps
-   naturally and responsively (no forced line break). */
+/* Bullet separator between every author except the last. Balanced spacing on
+   both sides of the dot. */
 .authors li:not(:last-child)::after {
   content: "•";
   color: var(--fg);
@@ -739,12 +756,11 @@ html[data-theme="light"] .authors::before {
   font-size: 0.75em;
   font-weight: 700;
   pointer-events: none;
-  transform: translateY(-0.05em);
-  margin-left: 14px;
+  margin: 0 7px 0 10px;
 }
 .authors a {
   color: #e6ede0;
-  font-weight: 600;
+  font-weight: 400;
   position: relative;
   padding: 0 1px;
   background-image: linear-gradient(180deg, transparent calc(100% - 2px), rgba(118,185,0,0) calc(100% - 2px), rgba(118,185,0,0) 100%);
@@ -766,8 +782,10 @@ html[data-theme="light"] .authors a { color: #353a30; }
   top: -0.55em;
   vertical-align: baseline;
   color: var(--fg);
-  font-weight: 600;
-  font-family: 'Times New Roman', 'Cambria', 'Georgia', serif;
+  font-weight: 400;
+  /* Same font (Rubik) as every other dagger on the page so the author †, the
+     "†Project Lead" note, and the table method daggers all share one shape. */
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
   font-size: 0.7em;
   line-height: 0;
   margin: 0 0 0 1px;
@@ -780,9 +798,11 @@ html[data-theme="light"] .aff {
 .affiliation {
   margin: 34px auto 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 26px;
+  justify-content: center;
+  gap: 10px 22px;
   color: var(--fg-2);
 }
 .affiliation__org {
@@ -793,9 +813,18 @@ html[data-theme="light"] .aff {
   letter-spacing: 0.01em;
   line-height: 1.35;
 }
+/* Official NVIDIA vertical logo (eye stays green; wordmark uses currentColor
+   so it reads white in dark mode and dark in light mode). */
+.affiliation__logo {
+  display: block;
+  height: clamp(54px, 7vw, 76px);
+  width: auto;
+  color: var(--fg);
+}
+html[data-theme="light"] .affiliation__logo { color: #0d1410; }
 .affiliation__note {
   color: var(--fg);
-  font-weight: 600;
+  font-weight: 400;
   font-family: 'Rubik', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: clamp(16px, 1.75vw, 20px);
   letter-spacing: 0;
@@ -805,7 +834,7 @@ html[data-theme="light"] .aff {
 .affiliation__note sup {
   font-family: 'Rubik', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: var(--fg);
-  font-weight: 700;
+  font-weight: 400;
   margin-right: 2px;
 }
 
@@ -838,7 +867,7 @@ html[data-theme="light"] .aff {
   padding: 0 4px;
 }
 html[data-theme="light"] .cta-note {
-  color: #4a7800;
+  color: var(--nv);
   text-shadow: 0 0 8px rgba(118,185,0,0.25);
 }
 .cta-note__text {
@@ -1085,17 +1114,285 @@ html[data-theme="light"] .btn--models .btn__pill {
   position: relative;
   scroll-margin-top: 80px;
 }
+/* Method now holds a single figure — trim its tall bottom padding so it doesn't
+   leave a big empty gap before the next section. */
+#method { padding-bottom: clamp(8px, 1.2vw, 18px); }
+/* Method holds a single figure, so pull the next section up close instead of
+   leaving the full 84px section gap below it. */
+#qualitative { padding-top: clamp(18px, 2.6vw, 32px); max-width: min(1340px, 95vw); }
+#qualitative .section__head { text-align: center; }
+
+/* Full-bleed shaded bands so Method and Qualitative read as distinct sections
+   (each a different tone), like the TL;DR / RQ bands. */
+#method::before,
+#results::before,
+#qualitative::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+#method::before      { background: #0f130c; }   /* green-tinted dark */
+#results::before     { background: #0c1110; }   /* deep teal-neutral dark */
+#qualitative::before { background: #0d120b; }   /* neutral green-tinted dark (not blue) */
+/* same raised-slab lift as the TL;DR / Insight bands */
+#method::before,
+#results::before,
+#qualitative::before {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 46px -22px rgba(0, 0, 0, 0.85);
+}
+html[data-theme="light"] #method::before      { background: #edf2e2; border-color: rgba(15, 20, 16, 0.08); }
+html[data-theme="light"] #results::before     { background: #e6efe9; border-color: rgba(15, 20, 16, 0.08); }
+html[data-theme="light"] #qualitative::before { background: #eef2e7; border-color: rgba(15, 20, 16, 0.08); }
+html[data-theme="light"] #method::before,
+html[data-theme="light"] #results::before,
+html[data-theme="light"] #qualitative::before {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 20px 46px -22px rgba(15, 20, 16, 0.22);
+}
 .section__head { margin-bottom: 28px; }
+
+/* ============================================================
+   Results · graduation-dynamics small multiples (animated)
+   ============================================================ */
+:root {
+  --grad-zppo: #76B900;          /* protagonist */
+  --grad-grpo: #a685ff;          /* GRPO† */
+  --grad-axis: rgba(255, 255, 255, 0.20);
+  --grad-grid: rgba(255, 255, 255, 0.07);
+  --grad-card: rgba(255, 255, 255, 0.025);
+}
+html[data-theme="light"] {
+  --grad-grpo: #7a52e0;
+  --grad-axis: rgba(15, 20, 16, 0.22);
+  --grad-grid: rgba(15, 20, 16, 0.08);
+  --grad-card: rgba(15, 20, 16, 0.018);
+}
+.grad { width: min(1000px, 94vw); margin: clamp(20px, 3vw, 34px) auto 0; }
+.grad__legend {
+  display: flex; justify-content: center; flex-wrap: wrap;
+  gap: clamp(18px, 3vw, 40px);
+  margin-bottom: clamp(16px, 2.4vw, 26px);
+}
+.grad__leg {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: clamp(13px, 1.4vw, 15.5px); font-weight: 600; color: var(--fg-2);
+}
+.grad__swatch { width: 28px; flex: 0 0 auto; }
+.grad__leg--zppo .grad__swatch { border-top: 3px solid var(--grad-zppo); }
+.grad__leg--grpo .grad__swatch { border-top: 3px dashed var(--grad-grpo); }
+
+/* 2×2 so each chart is ~2× larger (the SVG scales up, so axes/labels/curves all
+   become legible). One column on narrow screens. */
+.grad__grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: clamp(16px, 2.2vw, 30px);
+}
+@media (max-width: 620px) { .grad__grid { grid-template-columns: 1fr; } }
+
+.grad-chart {
+  background: var(--grad-card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px 16px 10px;
+}
+.grad-chart__title {
+  text-align: center;
+  font-size: clamp(14px, 1.5vw, 17px);
+  font-weight: 600; color: var(--fg-2);
+  margin-bottom: 6px;
+}
+.grad-chart__title b { color: var(--fg); font-weight: 800; }
+.grad-chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+.grad-axis { stroke: var(--grad-axis); stroke-width: 1; }
+.grad-grid { stroke: var(--grad-grid); stroke-width: 1; stroke-dasharray: 2 4; }
+.grad-axis-label, .grad-axis-title {
+  fill: var(--fg-3);
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+}
+.grad-axis-label { font-size: 9px; }
+.grad-axis-title { font-size: 9.5px; font-weight: 600; }
+
+.grad-line { fill: none; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.grad-line--zppo { stroke: var(--grad-zppo); filter: drop-shadow(0 0 4px rgba(118, 185, 0, 0.35)); }
+.grad-line--grpo { stroke: var(--grad-grpo); stroke-dasharray: 7 5; }
+
+.grad-dot { stroke: rgba(0, 0, 0, 0.3); stroke-width: 0.5; transition: opacity 0.3s ease; }
+.grad-dot--zppo { fill: var(--grad-zppo); }
+.grad-dot--grpo { fill: var(--grad-grpo); }
+.grad-endlabel {
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 11px; font-weight: 800; transition: opacity 0.3s ease;
+}
+.grad-endlabel--zppo { fill: var(--grad-zppo); }
+.grad-endlabel--grpo { fill: var(--grad-grpo); }
+
+.grad__note {
+  max-width: 780px; margin: clamp(16px, 2vw, 24px) auto 0;
+  text-align: center; font-size: 12.5px; line-height: 1.55; color: var(--fg-3);
+}
+.grad__replay {
+  display: flex; align-items: center; gap: 9px; width: fit-content;
+  margin: clamp(14px, 2vw, 20px) auto 0;
+  padding: 11px 28px; border-radius: 10px;
+  border: 1px solid rgba(118, 185, 0, 0.5);
+  background: rgba(118, 185, 0, 0.12);
+  color: var(--nv);
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: background 160ms var(--ease), border-color 160ms var(--ease);
+}
+.grad__replay:hover { background: rgba(118, 185, 0, 0.22); border-color: rgba(118, 185, 0, 0.8); }
+.grad__replay-ic { font-size: 17px; line-height: 1; }
+
+/* Method figure: reveal its panels in reading order — (a) → (b) → (c) → (d) —
+   by wiping the clip-path, so the reader takes it in one piece at a time. */
+#methodFigure { position: relative; --fig-crop: 1%; }
+/* figure2.png ships with a band of empty whitespace below the "(d)" label.
+   The media wrapper clips that bottom strip (overflow + negative margin) so it
+   doesn't leave a gap, while the clip-path reveal still runs on the <img>.
+   Tune --fig-crop (% of figure width) if it trims too much / too little. */
+#methodFigure .methodfig__media { position: relative; overflow: hidden; border-radius: var(--radius); line-height: 0; }
+#methodFigure .methodfig__media img {
+  display: block;
+  margin-bottom: calc(-1 * var(--fig-crop));
+  transform: translateZ(0);   /* own GPU layer so the animated clip-path renders cleanly (no faint ghost of the hidden panels) */
+  backface-visibility: hidden;
+}
+#methodFigure img { transition: clip-path 0.9s ease; }
+/* Replay jumps straight back to (a): snap the clip so the wide image never flashes
+   (and never overlaps the panel-(a) intro text) while shrinking. */
+#methodFigure.mf-instant img { transition: none; }
+#methodFigure.stage-hidden img { clip-path: inset(0 100% 100% 0); }
+#methodFigure.stage-a   img { clip-path: inset(0 51% 43% 0); }   /* top-left panel (a) incl. its rollouts + caption */
+#methodFigure.stage-ab  img { clip-path: inset(0 26% 43% 0); }   /* + (b) */
+#methodFigure.stage-abc img { clip-path: inset(0 0 43% 0); }     /* full top row: (a)+(b)+(c) */
+#methodFigure.stage-all img { clip-path: inset(0 0 0 0); }       /* + (d): full figure */
+#methodFigure figcaption { min-height: 4.8em; }
+/* "Why a replay buffer?" sits in the empty top-right region while only panel (a)
+   is shown, then fades out as (b)/(c) reveal and the caption takes over below. */
+.methodfig__intro {
+  position: absolute;
+  top: 0;
+  left: 50%;          /* hug the right of panel (a) instead of floating far right */
+  right: 0;
+  width: auto;
+  height: 57%;
+  display: flex;
+  align-items: flex-start;   /* sit near the top of panel (a), not vertically centred */
+  justify-content: flex-start;
+  padding: 6% 3% 2% 2%;
+  opacity: 0;
+  visibility: hidden;        /* fully gone when inactive — no ghost text behind later stages */
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease), visibility 0s linear 0.5s;
+}
+.methodfig__intro p {
+  margin: 0;
+  max-width: 30ch;
+  font-size: clamp(13px, 1.4vw, 17px);
+  line-height: 1.55;
+  color: var(--fg-2);
+  text-align: center;
+}
+/* Numbered walkthrough shown in an empty region of the figure (panel (a) intro
+   on the right; the (b)+(c) note over the lower band). */
+#methodFigure .methodfig__steps {
+  margin: 0;
+  padding: 0 0 0 1.5em;
+  max-width: 60ch;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  font-size: clamp(14px, 1.7vw, 19px);
+  line-height: 1.5;
+  color: var(--fg-2);
+  text-align: left;
+}
+.methodfig__intro .methodfig__steps { max-width: 34ch; }
+/* (b)+(c) note spans the wide lower band, so let each step run on one line. */
+#methodFigure .methodfig__bc .methodfig__steps { max-width: none; white-space: nowrap; }
+/* (d) caption sits below the full figure → use the whole width, not a narrow column.
+   It's a single line, so drop the "1." marker and its indent. */
+#methodFigure .methodfig__steps--cap {
+  max-width: 100%;
+  margin-left: 0; margin-right: 0;
+  list-style: none; padding-left: 0;
+  text-align: left;
+  font-size: clamp(15px, 1.65vw, 18.5px);
+}
+#methodFigure .methodfig__steps li { padding-left: 0.15em; }
+#methodFigure .methodfig__steps li::marker { color: var(--nv); font-weight: 800; }
+.methodfig__intro strong,
+.methodfig__bc strong { color: var(--nv); font-weight: 700; }
+html[data-theme="light"] .methodfig__intro strong,
+html[data-theme="light"] .methodfig__bc strong { color: var(--nv); }
+/* BCQ / NCQ keep their signature colours even inside the green-strong overlay. */
+.methodfig__bc strong.hl-cyan-text,
+html[data-theme="light"] .methodfig__bc strong.hl-cyan-text { color: #22d3ee; }
+.methodfig__bc strong.hl-magenta-text,
+html[data-theme="light"] .methodfig__bc strong.hl-magenta-text { color: #e879f9; }
+#methodFigure.stage-a .methodfig__intro { opacity: 1; visibility: visible; transition: opacity 0.5s var(--ease), visibility 0s linear 0s; }
+/* (b)+(c) note: fills the empty lower band that is clipped away while only the
+   top row is shown. */
+.methodfig__bc {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 43%;
+  display: none;             /* not rendered at all unless we're on the (b)+(c) stage */
+  align-items: center;
+  justify-content: center;
+  padding: 1.5% 6%;
+  line-height: normal;
+  pointer-events: none;
+}
+#methodFigure.stage-abc .methodfig__bc { display: flex; animation: mf-fade-in 0.5s var(--ease) both; }
+@keyframes mf-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .methodfig__intro, .methodfig__bc { display: none; } }
+@media (max-width: 720px) {
+  /* On narrow screens the panels stack, so keep the intro out of the way. */
+  .methodfig__intro { position: static; width: auto; height: auto; opacity: 1; visibility: visible; }
+}
+.methodfig__replay {
+  display: none;
+  align-items: center;
+  gap: 9px;
+  width: fit-content;
+  margin: 20px auto 0;
+  padding: 12px 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(118, 185, 0, 0.5);
+  background: rgba(118, 185, 0, 0.12);
+  color: var(--nv);
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 160ms var(--ease), border-color 160ms var(--ease);
+}
+.methodfig__replay.is-show { display: flex; }
+.methodfig__replay:hover { background: rgba(118, 185, 0, 0.22); border-color: rgba(118, 185, 0, 0.8); }
+.methodfig__replay-ic { font-size: 18px; line-height: 1; }
+@media (prefers-reduced-motion: reduce) {
+  #methodFigure img { transition: none; clip-path: none !important; }
+  .methodfig__replay { display: none !important; }
+}
 .section__kicker {
   display: inline-block;
   text-transform: uppercase;
   letter-spacing: 0.32em;
   font-size: 12px;
-  font-weight: 700;
-  color: var(--nv);
-  padding: 4px 10px;
-  background: var(--nv-soft);
-  border: 1px solid rgba(118,185,0,0.35);
+  font-weight: 800;
+  color: #0b1d05;
+  padding: 5px 14px;
+  background: linear-gradient(135deg, #b8f73a, #76b900);
+  border: 1px solid rgba(118,185,0,0.7);
   border-radius: 999px;
   margin-bottom: 14px;
 }
@@ -1104,17 +1401,35 @@ html[data-theme="light"] .btn--models .btn__pill {
 .section__head--center { text-align: center; }
 .section__head--center .section__kicker { margin-bottom: 0; }
 
+/* Method section head — centered like TL;DR / Research Question (kicker keeps
+   its default bottom margin; the lede block is centered via auto margins). */
+#method .section__head { text-align: center; }
+/* Method lede framed in a dashed box, text left-aligned (block stays centered). */
+#method .section__lede {
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: clamp(15px, 1.6vw, 18px);
+  line-height: 1.6;
+  text-align: left;
+  padding: clamp(16px, 2vw, 22px) clamp(18px, 2.4vw, 26px);
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+}
+
 /* XL kicker — used as the standalone TL;DR marker */
 .section__kicker--xl {
   font-size: clamp(20px, 2.4vw, 26px);
   font-weight: 800;
   letter-spacing: 0.34em;
   padding: 12px 28px 12px 32px;
-  background: linear-gradient(135deg, rgba(118,185,0,0.20), rgba(118,185,0,0.06));
-  border: 1px solid rgba(118,185,0,0.50);
+  color: #0b1d05;
+  background: linear-gradient(135deg, #b8f73a, #76b900);
+  border: 1px solid rgba(118,185,0,0.7);
   box-shadow:
-    0 0 0 1px rgba(118,185,0,0.08) inset,
-    0 8px 28px rgba(118,185,0,0.22);
+    0 0 0 1px rgba(255,255,255,0.18) inset,
+    0 8px 28px rgba(118,185,0,0.34);
   position: relative;
   isolation: isolate;
 }
@@ -1133,12 +1448,12 @@ html[data-theme="light"] .btn--models .btn__pill {
   z-index: -1;
 }
 html[data-theme="light"] .section__kicker--xl {
-  background: linear-gradient(135deg, rgba(118,185,0,0.18), rgba(118,185,0,0.06));
-  color: #4a7800;
-  border-color: rgba(118,185,0,0.55);
+  background: linear-gradient(135deg, #b8f73a, #76b900);
+  color: #0b1d05;
+  border-color: rgba(118,185,0,0.7);
   box-shadow:
-    0 0 0 1px rgba(118,185,0,0.08) inset,
-    0 6px 20px rgba(118,185,0,0.16);
+    0 0 0 1px rgba(255,255,255,0.25) inset,
+    0 6px 20px rgba(118,185,0,0.22);
 }
 .section__title {
   font-family: 'Rubik', sans-serif;
@@ -1156,12 +1471,19 @@ html[data-theme="light"] .section__kicker--xl {
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
+/* Consistent BCQ = cyan, NCQ = magenta accents (matches the Solution diagram).
+   Solid colors — no gradient. */
+.section__title em.hl-cyan    { background: none; color: #22d3ee; -webkit-text-fill-color: #22d3ee; }
+.section__title em.hl-magenta { background: none; color: #e879f9; -webkit-text-fill-color: #e879f9; }
 .section__lede {
   max-width: 760px;
   color: var(--fg-2);
   margin: 14px 0 0;
   font-size: 15.5px;
 }
+/* In a centred head, centre the lede block itself (not just its text), so it
+   isn't pinned to the left. */
+.section__head--center .section__lede { margin-left: auto; margin-right: auto; }
 
 /* ---------- TL;DR · Zone of Proximal Development viz ---------- */
 .zone-viz {
@@ -1741,7 +2063,7 @@ html[data-theme="light"] .perf__teacher-chip {
 }
 .perf.has-trained .perf__hint-finger { animation: none; }
 html[data-theme="light"] .perf__hint-text {
-  color: #4a7800;
+  color: var(--nv);
   text-shadow: 0 0 6px rgba(118,185,0,0.25);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1788,7 +2110,7 @@ html[data-theme="light"] .perf__hint-text {
 .perf__train-btn.is-done .perf__icon-play   { display: none; }
 .perf__train-btn.is-done .perf__icon-replay { display: inline; }
 html[data-theme="light"] .perf__train-btn {
-  color: #4a7800;
+  color: var(--nv);
   background: linear-gradient(180deg, rgba(118,185,0,0.20), rgba(118,185,0,0.08));
   border-color: rgba(118,185,0,0.6);
 }
@@ -1888,14 +2210,27 @@ html[data-theme="light"] .perf__progress-num {
 }
 .perf__row {
   display: grid;
-  grid-template-columns: minmax(140px, 1.2fr) 2fr 2fr 2fr;
+  /* Method column wide enough to hold "GRPO† + Teacher response" on one line. */
+  grid-template-columns: minmax(210px, 1.1fr) 2fr 2fr 2fr;
   gap: 14px;
   align-items: center;
   padding: 12px 14px;
   border-radius: 14px;
   border: 1px solid transparent;
   background: rgba(255,255,255,0.02);
-  transition: background 200ms var(--ease), border-color 200ms var(--ease);
+  transition: background 220ms var(--ease), border-color 220ms var(--ease), box-shadow 220ms var(--ease);
+}
+/* Linked-row highlight: synced with the active Problem carousel slide so the
+   reader can see which table row(s) each problem refers to. */
+.perf__row.is-linked {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 80, 95, 0.60);
+  box-shadow: inset 5px 0 0 0 #ff6b7a, inset 0 0 0 1.5px rgba(255, 80, 95, 0.55);
+}
+html[data-theme="light"] .perf__row.is-linked {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(195, 36, 58, 0.50);
+  box-shadow: inset 5px 0 0 0 #c3243a, inset 0 0 0 1.5px rgba(195, 36, 58, 0.50);
 }
 .perf__row--head {
   background: transparent;
@@ -1969,6 +2304,9 @@ html[data-theme="light"] .perf__progress-num {
   font-weight: 600;
   color: var(--fg);
   font-size: 15px;
+  /* Keep method names on a single line (the method column auto-widens to fit
+     the longest label, e.g. "GRPO† + Teacher response"). */
+  white-space: nowrap;
 }
 .perf__method sup {
   color: var(--fg-3);
@@ -2036,11 +2374,13 @@ html[data-theme="light"] .perf__progress-num {
 /* Animations only fire after the panel scrolls into view */
 .perf.is-visible .perf__fill--pos,
 .perf.is-visible .perf__fill--zppo {
-  animation: perf-grow-pos var(--dur, 3.6s) cubic-bezier(0.3, 0.05, 0.4, 1) forwards;
+  /* linear — keeps the bar growing all the way to its final width in lock-step
+     with the linear VLM Training progress bar (no early ease-out plateau). */
+  animation: perf-grow-pos var(--dur, 3.6s) linear forwards;
   animation-delay: var(--d, 0.4s);
 }
 .perf.is-visible .perf__fill--neg {
-  animation: perf-grow-neg var(--dur, 3.6s) cubic-bezier(0.3, 0.05, 0.4, 1) forwards;
+  animation: perf-grow-neg var(--dur, 3.6s) linear forwards;
   animation-delay: var(--d, 0.4s);
 }
 @keyframes perf-grow-pos {
@@ -2095,10 +2435,11 @@ html[data-theme="light"] .perf__progress-num {
 /* Stagger START per row (--d), but stretch DURATION (--dur) so every bar
    finishes at --d + --dur = 4.30s — exactly when the VLM Training progress
    bar hits 100%. This keeps the cascade-in feel while all bars stop together. */
-.perf__row[data-method="off"]  .perf__fill { --d: 0.20s; --dur: 4.10s; }
-.perf__row[data-method="on"]   .perf__fill { --d: 0.35s; --dur: 3.95s; }
-.perf__row[data-method="grpo"] .perf__fill { --d: 0.50s; --dur: 3.80s; }
-.perf__row[data-method="zppo"] .perf__fill { --d: 0.70s; --dur: 3.60s; }
+.perf__row[data-method="off"]    .perf__fill { --d: 0.20s; --dur: 4.10s; }
+.perf__row[data-method="on"]     .perf__fill { --d: 0.35s; --dur: 3.95s; }
+.perf__row[data-method="grpo"]   .perf__fill { --d: 0.50s; --dur: 3.80s; }
+.perf__row[data-method="prefix"] .perf__fill { --d: 0.60s; --dur: 3.70s; }
+.perf__row[data-method="zppo"]   .perf__fill { --d: 0.70s; --dur: 3.60s; }
 
 .perf__foot {
   margin: 18px 0 0;
@@ -2115,6 +2456,7 @@ html[data-theme="light"] .perf__progress-num {
   color: var(--nv);
   font-weight: 700;
 }
+.perf__foot-sep { opacity: 0.45; margin: 0 4px; }
 /* Dagger legend rendered inline beside the foot line. Compact so it doesn't
    compete with the headline, but with the dagger glyph tinted the same
    NVIDIA green as the dagger marks in the table above. */
@@ -2153,9 +2495,9 @@ html[data-theme="light"] .perf__bar {
   background: rgba(0,0,0,0.06);
   border-color: rgba(0,0,0,0.05);
 }
-html[data-theme="light"] .perf__val--pos { color: #4a7800; }
+html[data-theme="light"] .perf__val--pos { color: var(--nv); }
 html[data-theme="light"] .perf__val--neg { color: #b91c1c; }
-html[data-theme="light"] .perf__val--zppo { color: #4a7800; text-shadow: 0 0 8px rgba(118,185,0,0.3); }
+html[data-theme="light"] .perf__val--zppo { color: var(--nv); text-shadow: 0 0 8px rgba(118,185,0,0.3); }
 html[data-theme="light"] .perf__row {
   background: rgba(0,0,0,0.015);
 }
@@ -2455,7 +2797,7 @@ html[data-theme="light"] .impact-bar {
 html[data-theme="light"] .impact-bar__seg {
   border-right-color: rgba(0, 0, 0, 0.06);
 }
-html[data-theme="light"] .impact-bar__num { color: #4a7800; }
+html[data-theme="light"] .impact-bar__num { color: var(--nv); }
 
 @media (max-width: 480px) {
   .impact-bar { grid-template-columns: 1fr; }
@@ -2515,6 +2857,8 @@ html[data-theme="light"] .impact-bar__num { color: #4a7800; }
 .hl-good { color: var(--nv); font-weight: 700; }
 .hl-good-text { color: var(--nv); font-weight: 700; }
 .hl-bad-text { color: var(--neg); font-weight: 700; }
+.hl-cyan-text { color: #22d3ee; font-weight: 700; }      /* BCQ */
+.hl-magenta-text { color: #e879f9; font-weight: 700; }   /* NCQ */
 
 .callout {
   margin-top: 18px;
@@ -2543,6 +2887,1147 @@ html[data-theme="light"] .impact-bar__num { color: #4a7800; }
   display: grid;
   gap: 14px;
 }
+
+/* ---------- Research Question ----------
+   A boxed quote that mirrors the TL;DR panel's card treatment (surface +
+   subtle radial tint + rounded border), bridging Problem and Method. */
+/* Full-width tonal band that sets the Research Question apart from the TL;DR
+   block above — a subtly different shade than the page background, fenced by
+   hairline rules so the two sections read as distinct blocks. */
+/* Full-width tonal bands that set the TL;DR and Research Question apart from
+   the page background as distinct blocks (a hair off the page bg, fenced by
+   hairline rules, with clear page-bg gaps between them). */
+.tldr-band,
+.rq-band {
+  background: #0f120b;            /* dark: a hair lighter than --bg (#0a0c08) */
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  /* lift the band off the page so the section reads as a raised slab */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 46px -22px rgba(0, 0, 0, 0.85);
+}
+html[data-theme="light"] .tldr-band,
+html[data-theme="light"] .rq-band {
+  background: #edf2e2;            /* light: a hair darker than --bg (#f7faf2) */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 20px 46px -22px rgba(15, 20, 16, 0.22);
+}
+/* The TL;DR section already carries its own 84px vertical padding, so the band
+   only needs a gap below it to separate from the Research Question block. */
+.tldr-band {
+  margin: 0 0 clamp(44px, 7vw, 84px);
+}
+.rq-band {
+  margin: clamp(44px, 7vw, 84px) 0;
+  padding: 40px 16px 40px;
+  scroll-margin-top: 80px;
+}
+/* Section-title row: title pill on top, Skip control centered directly below it. */
+.rq-band__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(12px, 1.8vw, 18px);
+  width: min(1080px, calc(100% - 40px));
+  margin: 0 auto clamp(18px, 2.6vw, 30px);
+  text-align: center;
+}
+/* Long title: keep the XL pill's glow/border but tighten size + tracking so the
+   phrase fits comfortably on one line. */
+.section__kicker--wide {
+  letter-spacing: 0.08em;
+  font-size: clamp(14px, 1.8vw, 20px);
+  padding: 10px 22px;
+}
+
+/* Outer wrapper that centers the Question and Solution panels. */
+.rq {
+  width: min(1080px, calc(100% - 40px));
+  margin: clamp(10px, 1.5vw, 18px) auto 0;
+  text-align: center;
+  position: relative;
+}
+/* "Skip" control, centered under the title — a filled rectangle that lets
+   impatient readers jump past the typewriter animation. */
+.rq__skip {
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  padding: 9px 18px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.10);
+  color: #ffffff;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 160ms var(--ease), border-color 160ms var(--ease), opacity 260ms var(--ease);
+}
+.rq__skip:hover { background: rgba(255, 255, 255, 0.18); border-color: rgba(255, 255, 255, 0.7); }
+.rq__skip-note { color: rgba(255, 255, 255, 0.72); font-weight: 600; }
+html[data-theme="light"] .rq__skip { background: rgba(15, 20, 16, 0.06); border-color: rgba(15, 20, 16, 0.4); color: var(--fg); }
+html[data-theme="light"] .rq__skip-note { color: var(--fg-2); }
+.rq__skip.is-hidden { opacity: 0; pointer-events: none; }
+/* A panel = a badge that straddles the top edge of its own box. Used by both
+   the Question and the Solution so the two read as matching cards. */
+.rq__panel {
+  position: relative;
+  margin-top: 20px;          /* room for the straddling badge's upper half */
+}
+/* The boxed card (TL;DR-style). overflow: hidden clips the decorative quote
+   marks (Question box only); the badge sits outside the box so it isn't clipped. */
+.rq__box {
+  position: relative;
+  /* Larger top padding reserves a clean band for the badge tucked inside the box. */
+  padding: clamp(60px, 6vw, 76px) clamp(28px, 5vw, 64px) clamp(38px, 5vw, 56px);
+  border-radius: 22px;
+  /* All three boxes (Question / Inspiration / Solution) share one frosted-white
+     surface so the section reads as a single, consistent card style. */
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.045) 60%);
+  overflow: hidden;
+}
+html[data-theme="light"] .rq__box {
+  border-color: rgba(15, 20, 16, 0.12);
+  background: linear-gradient(160deg, #ffffff, #eef3e6);
+}
+/* Big decorative quotation marks — Question box only (they belong to the
+   question, so they bracket it and never drift down to the Solution). */
+.rq__box--quote::before,
+.rq__box--quote::after {
+  position: absolute;
+  z-index: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(88px, 12vw, 168px);
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.92);
+  opacity: 1;
+  text-shadow: none;
+  pointer-events: none;
+}
+.rq__box--quote::before { content: "\201C"; left: 18px;  top: -0.06em; }
+.rq__box--quote::after  { content: "\201D"; right: 18px; bottom: -0.46em; }
+html[data-theme="light"] .rq__box--quote::before,
+html[data-theme="light"] .rq__box--quote::after {
+  color: rgba(15, 20, 16, 0.22);
+  text-shadow: none;
+}
+/* Research Question box: rounded corners + a light, frosted "white" card so the
+   question reads as a distinct surface (Solution / Inspiration keep their look). */
+.rq__box--quote {
+  border-radius: 22px;
+  border-color: rgba(255, 255, 255, 0.16);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.045) 60%);
+}
+html[data-theme="light"] .rq__box--quote {
+  border-color: rgba(15, 20, 16, 0.12);
+  background: linear-gradient(160deg, #ffffff, #eef3e6);
+}
+
+/* Pill badge (TL;DR-style) tucked just inside the top of its box (not straddling
+   the border). The badge is a sibling of the box, so the box's overflow:hidden
+   never clips it; the box's extra top padding keeps content clear of the badge. */
+.rq__kicker {
+  position: absolute;
+  top: clamp(14px, 1.8vw, 20px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  isolation: isolate;
+  display: inline-block;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(13px, 1.4vw, 17px);
+  font-weight: 800;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  /* Solid green "filled" pill (same design as the SOLUTION badge). */
+  color: #0b1d05;
+  padding: 10px 22px 10px 28px;   /* extra left padding offsets trailing letter-spacing */
+  border-radius: 999px;
+  background: linear-gradient(135deg, #b8f73a, #76b900);
+  border: 1px solid rgba(118,185,0,0.7);
+  box-shadow: 0 8px 28px rgba(118,185,0,0.35);
+}
+.rq__kicker::before { display: none; }   /* no outline ring on the filled pill */
+/* All three badges (RESEARCH QUESTION / INSPIRATION / SOLUTION) are text-only —
+   no green fill — so they read as quiet corner-bracket labels, not loud pills. */
+.rq > .rq__panel > .rq__kicker {
+  background: transparent;
+  color: #ffffff;
+  border: none;
+  box-shadow: none;
+}
+html[data-theme="light"] .rq > .rq__panel > .rq__kicker {
+  background: transparent;
+  color: #1c2118;
+  border: none;
+  box-shadow: none;
+}
+/* Corner-bracket frame: four L-shaped corners (built from short line segments)
+   wrap each badge like a box — no solid border. */
+.rq > .rq__panel > .rq__kicker,
+.rq__inspiration .rq__kicker,
+.rq__solution .rq__kicker--solution,
+.rq__effect .rq__kicker--effect {
+  display: inline-block;
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.18);
+}
+.rq > .rq__panel > .rq__kicker::after,
+.rq__inspiration .rq__kicker::after,
+.rq__solution .rq__kicker--solution::after,
+.rq__effect .rq__kicker--effect::after { content: none; }
+.rq > .rq__panel > .rq__kicker::before,
+.rq__inspiration .rq__kicker::before,
+.rq__solution .rq__kicker--solution::before,
+.rq__effect .rq__kicker--effect::before {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  --c: rgba(255, 255, 255, 0.72);
+  background-image:
+    linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)),
+    linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)),
+    linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)),
+    linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c));
+  background-position:
+    top left, top left, top right, top right,
+    bottom left, bottom left, bottom right, bottom right;
+  background-size:
+    14px 1.6px, 1.6px 14px, 14px 1.6px, 1.6px 14px,
+    14px 1.6px, 1.6px 14px, 14px 1.6px, 1.6px 14px;
+}
+html[data-theme="light"] .rq > .rq__panel > .rq__kicker,
+html[data-theme="light"] .rq__inspiration .rq__kicker,
+html[data-theme="light"] .rq__solution .rq__kicker--solution,
+html[data-theme="light"] .rq__effect .rq__kicker--effect { text-shadow: none; }
+html[data-theme="light"] .rq > .rq__panel > .rq__kicker::before,
+html[data-theme="light"] .rq__inspiration .rq__kicker::before,
+html[data-theme="light"] .rq__solution .rq__kicker--solution::before,
+html[data-theme="light"] .rq__effect .rq__kicker--effect::before { --c: rgba(15, 20, 16, 0.55); }
+html[data-theme="light"] .rq__kicker {
+  background: linear-gradient(135deg, #b8f73a, #76b900);
+  color: #0b1d05;
+  border-color: rgba(118,185,0,0.7);
+  box-shadow:
+    0 0 0 1px rgba(118,185,0,0.08) inset,
+    0 6px 18px rgba(118,185,0,0.18);
+}
+.rq__quote {
+  position: relative;
+  z-index: 1;
+  /* fill the box width (it's already capped by the .rq container) instead of a
+     narrow 880px column that left a big empty band on the right. */
+  max-width: none;
+  margin: 0 auto;
+  text-align: left;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(16px, 1.85vw, 23px);
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+  color: var(--fg);
+  /* normal (not balance): the line breaks must stay identical while typing and
+     after it finishes, otherwise removing .is-typing would re-balance the words
+     and the whole quote visibly jumps at the end. */
+  text-wrap: normal;
+}
+.rq__quote em { font-style: italic; }
+.rq__quote strong { color: var(--nv); font-weight: 700; }
+html[data-theme="light"] .rq__quote strong { color: var(--nv); }
+/* "hard questions" reads as the failure case → red (beats the green strong rule). */
+.rq__quote strong.rq__hard,
+html[data-theme="light"] .rq__quote strong.rq__hard { color: var(--neg); }
+/* The summarized punch line — shown as a code block (monospace) so it reads as the
+   crisp, quotable takeaway. */
+.rq__quote .rq__punch {
+  display: block;
+  margin-top: clamp(16px, 2vw, 24px);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface-3);
+  font-family: Consolas, 'JetBrains Mono', ui-monospace, monospace;
+  font-size: clamp(13px, 1.5vw, 16px);
+  font-weight: 600;
+  line-height: 1.55;
+  letter-spacing: 0;
+}
+/* Highlight the failure mode ("policy drift (degrading generalization)") in red —
+   in both themes. The light-theme selectors carry extra specificity so they beat
+   the light-theme green-strong rule above. */
+.rq__quote .rq__punch strong,
+.rq__quote .rq__punch-note,
+html[data-theme="light"] .rq__quote .rq__punch strong,
+html[data-theme="light"] .rq__quote .rq__punch-note { color: var(--neg); font-weight: inherit; }
+/* Invisible clause-boundary markers used only to time the typewriter pauses. */
+.rq__quote .rqp { display: none; }
+/* Blinking typewriter caret (an inline bar appended during typing). */
+.rq__caret {
+  /* zero-width inline marker: takes no layout space, so it can never wrap a word
+     to a new line (or briefly bump the line) at the end of typing. */
+  display: inline;
+  position: relative;
+}
+.rq__caret::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  bottom: -0.02em;
+  width: 3px;
+  height: 1.05em;
+  background: var(--nv);
+  border-radius: 1px;
+  box-shadow: 0 0 9px rgba(118, 185, 0, 0.65);
+  animation: rq-caret-blink 0.7s steps(1, end) infinite;
+  pointer-events: none;
+}
+@keyframes rq-caret-blink {
+  0%, 50%      { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rq__caret::before { animation: none; }
+}
+@media (max-width: 640px) {
+  .rq { padding-left: 22px; padding-right: 22px; }
+}
+
+/* Solution — collapsed until the Research Question finishes typing, then the
+   box expands ONCE to a fixed, JS-measured height and never resizes while the
+   text types in (overflow: hidden guarantees the size stays put). */
+.rq__solution {
+  overflow: hidden;
+  height: 0;
+  opacity: 0;
+  margin-top: 0;
+  transition:
+    height 540ms var(--ease),
+    opacity 420ms var(--ease),
+    margin-top 540ms var(--ease);
+}
+.rq__solution.is-shown {
+  height: var(--sol-h, 460px);   /* fixed height pinned by measureSolutionHeight() */
+  opacity: 1;
+  margin-top: clamp(22px, 3vw, 34px);
+}
+.rq__solution-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+/* Solution box spans the full panel width (like the Question box) so it never
+   shrinks to its content width. */
+.rq__solution .rq__panel { width: 100%; }
+.rq__solution .rq__solution-arrow { align-self: center; }
+.rq__solution-arrow {
+  width: clamp(34px, 4.2vw, 48px);
+  height: auto;
+  color: rgba(255, 255, 255, 0.92);
+  opacity: 1;
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.4));
+}
+html[data-theme="light"] .rq__solution-arrow {
+  color: rgba(15, 20, 16, 0.7);
+  filter: drop-shadow(0 0 10px rgba(15, 20, 16, 0.18));
+}
+/* Solution badge — text only (no green fill / border), like RESEARCH QUESTION
+   and INSPIRATION. */
+.rq__solution .rq__kicker--solution,
+.rq__effect .rq__kicker--effect {
+  background: transparent;
+  color: #ffffff;
+  border: none;
+  box-shadow: none;
+}
+html[data-theme="light"] .rq__solution .rq__kicker--solution,
+html[data-theme="light"] .rq__effect .rq__kicker--effect { color: #1c2118; background: transparent; border: none; box-shadow: none; }
+
+/* ---------- Inspiration (Zone of Proximal Development) ----------
+   Sits between the Question and the Solution; collapses (0fr) until revealed. */
+.rq__inspiration {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin: 0;
+  transition: grid-template-rows 600ms var(--ease), opacity 420ms var(--ease), margin 600ms var(--ease);
+}
+.rq__inspiration.is-shown {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin: clamp(22px, 3vw, 34px) 0 0;
+}
+.rq__inspiration-inner {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.rq__inspiration .rq__panel { width: 100%; }
+/* Make the Inspiration box read clearly as a contained box (its border is more
+   visible than the default hairline so all the content sits inside it). */
+.rq__inspiration .rq__box { border-color: rgba(255, 255, 255, 0.16); }
+html[data-theme="light"] .rq__inspiration .rq__box { border-color: rgba(0, 0, 0, 0.14); }
+@media (prefers-reduced-motion: reduce) { .rq__inspiration { transition: none; } }
+/* Through Our Lens: its own collapse/reveal step (nested in the inspiration block)
+   so it animates in only after Inspiration finishes. */
+.rq__lens-wrap {
+  width: 100%;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 600ms var(--ease), opacity 420ms var(--ease);
+}
+.rq__lens-wrap.is-shown { grid-template-rows: 1fr; opacity: 1; }
+.rq__lens-inner {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+@media (prefers-reduced-motion: reduce) { .rq__lens-wrap { transition: none; } }
+/* Effect: revealed + typed after the Solution. */
+.rq__effect {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin: 0;
+  transition: grid-template-rows 600ms var(--ease), opacity 420ms var(--ease), margin 600ms var(--ease);
+}
+.rq__effect.is-shown { grid-template-rows: 1fr; opacity: 1; margin: clamp(22px, 3vw, 34px) 0 0; }
+.rq__effect-inner {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+.rq__effect .rq__panel { width: 100%; }
+/* Extra top padding so the cards sit clearly below the EFFECT badge. */
+.rq__effect .rq__box { padding-top: clamp(86px, 8.5vw, 112px); }
+@media (prefers-reduced-motion: reduce) { .rq__effect { transition: none; } }
+/* Two side-by-side effect cards (BCQ cyan / NCQ magenta). */
+.effect__grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 2.5vw, 28px); }
+@media (max-width: 720px) { .effect__grid { grid-template-columns: 1fr; } }
+.effect__card {
+  padding: clamp(16px, 2vw, 22px);
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface-3);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.effect__card--bcq { border-color: rgba(34, 211, 238, 0.4); }
+.effect__card--ncq { border-color: rgba(232, 121, 249, 0.4); }
+.effect__text {
+  margin: 0;
+  font-size: clamp(14px, 1.4vw, 16px);
+  line-height: 1.6;
+  color: var(--fg-2);
+  text-align: left;
+  min-height: 6.4em;     /* reserve space so the typed text doesn't grow the card */
+}
+.effect__text strong { color: var(--nv); font-weight: 700; }
+html[data-theme="light"] .effect__text strong { color: var(--nv); }
+/* Inspiration badge — text only (no teal fill / border), like RESEARCH QUESTION. */
+.rq__inspiration .rq__kicker {
+  background: transparent;
+  color: #ffffff;
+  border: none;
+  box-shadow: none;
+}
+html[data-theme="light"] .rq__inspiration .rq__kicker { color: #1c2118; background: transparent; border: none; box-shadow: none; }
+
+.zpd {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;   /* the circle (auto) is the dead-centre column */
+  align-items: center;
+  justify-items: center;
+  gap: clamp(16px, 3vw, 40px);
+}
+.zpd__author { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 0 0 auto; }
+.zpd__author img {
+  width: clamp(124px, 16vw, 158px);
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+/* BK's headshot is square (1:1); Vygotsky's is portrait (~3:4). Widen BK so its
+   rendered height matches Vygotsky's photo height (width × ~1.39). */
+.zpd--ours .zpd__author img { width: clamp(146px, 18vw, 182px); }
+.zpd--ours .zpd__author-ph { width: clamp(146px, 18vw, 182px); aspect-ratio: 1 / 1; }
+.zpd__author figcaption {
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(17px, 1.8vw, 20px);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--fg-2);
+  text-align: center;
+}
+.zpd__author figcaption a.zpd__name,
+.zpd__author figcaption .zpd__name a { color: inherit; text-decoration: none; transition: color 160ms var(--ease); }
+.zpd__author figcaption a.zpd__name:hover,
+.zpd__author figcaption .zpd__name a:hover { color: var(--nv); text-decoration: underline; text-underline-offset: 2px; }
+html[data-theme="light"] .zpd__author figcaption a.zpd__name:hover,
+html[data-theme="light"] .zpd__author figcaption .zpd__name a:hover { color: var(--nv); }
+.zpd__credit {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--fg-3);
+  text-decoration: none;
+}
+.zpd__credit:hover { color: var(--fg-3); text-decoration: none; }
+/* "et al." in a distinct italic serif. */
+.zpd__name .zpd__etal {
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+/* NVIDIA logo under the Byung-Kwan Lee photo (eye stays green, wordmark follows
+   the text color so it reads in both themes). */
+.zpd__credit-logo {
+  display: block;
+  height: 17px;
+  width: auto;
+  margin: 7px auto 0;
+  color: var(--fg-2);
+}
+/* The wrapper passes its children (circle + legend) straight into the .zpd grid
+   so the circle can be the centered middle column, with the photo to its left and
+   the legend to its right (both hugging the circle). */
+.zpd__right { display: contents; }
+.zpd__author { justify-self: end; }
+.zpd__legend { justify-self: start; }
+.zpd__svg { width: clamp(195px, 30vw, 250px); height: auto; }
+/* Narrower screens: stack photo → circle → legend, all centered. */
+@media (max-width: 880px) {
+  .zpd { grid-template-columns: 1fr; }
+  .zpd__author, .zpd__legend { justify-self: center; }
+}
+/* Cohesive green scale where the vivid NVIDIA-green ZPD ring is the bright "spotlight"
+   between two darker zones — all dark enough for clean white labels. */
+.zpd__ring--anx     { fill: #4a78a0; filter: drop-shadow(0 0 10px rgba(74, 120, 160, 0.45)); }    /* out of reach — soft steel blue */
+.zpd__ring--learn   { fill: #76b900; filter: drop-shadow(0 0 16px rgba(118, 185, 0, 0.7)); }      /* ZPD — NVIDIA green (vivid hero) */
+.zpd__ring--comfort { fill: #0e5a28; filter: drop-shadow(0 0 12px rgba(14, 90, 40, 0.6)); }       /* mastered — deep saturated emerald */
+.zpd__t {
+  fill: #fff;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+/* All three rings are dark enough for white labels now. */
+.zpd__t--out { fill: #ffffff; }
+.zpd__t--in  { fill: #ffffff; }
+/* Cap the legend width so the long rollout-accuracy descriptions wrap inside it
+   instead of widening the row and pushing the legend below the diagram. */
+/* Typed intro line above the diagram. */
+.zpd__intro {
+  margin: 0 auto clamp(16px, 2.4vw, 26px);
+  max-width: 760px;
+  min-height: 4.4em;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(15px, 1.6vw, 19px);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--fg);
+  text-align: center;
+}
+.zpd__intro strong { color: var(--nv); font-weight: 700; white-space: nowrap; }
+.zpd__intro strong.zpd-plain { color: var(--fg); }   /* keep this one white, not green */
+.zpd__intro em { font-style: italic; }
+
+/* Zone entrance: circles grow in (outer → middle → inner); labels + legend fade
+   in after. Armed by JS once the intro line finishes typing. */
+.zpd--anim .zpd__ring { transform-box: fill-box; transform-origin: center; transform: scale(0); opacity: 0; }
+.zpd--anim .zpd__t { opacity: 0; }
+.zpd--anim .zpd__legend { opacity: 0; transform: translateY(8px); }
+.zpd--anim .zpd__author { opacity: 0; transform: translateY(8px); }   /* photo appears with the diagram, after the intro types */
+.zpd--anim.is-zones .zpd__ring {
+  transition: transform 0.62s cubic-bezier(.2, .75, .3, 1), opacity 0.45s ease;
+  transform: scale(1); opacity: 1;
+}
+.zpd--anim.is-zones .zpd__ring--anx     { transition-delay: 0s; }
+.zpd--anim.is-zones .zpd__ring--learn   { transition-delay: 0.4s; }
+.zpd--anim.is-zones .zpd__ring--comfort { transition-delay: 0.8s; }
+.zpd--anim.is-zones .zpd__t { transition: opacity 0.45s ease; opacity: 1; }
+.zpd--anim.is-zones .zpd__t--out { transition-delay: 0.35s; }
+.zpd--anim.is-zones .zpd__t--mid { transition-delay: 0.75s; }
+.zpd--anim.is-zones .zpd__t--in  { transition-delay: 1.15s; }
+.zpd--anim.is-zones .zpd__legend { transition: opacity 0.5s ease 1.2s, transform 0.5s ease 1.2s; opacity: 1; transform: none; }
+.zpd--anim.is-zones .zpd__author { transition: opacity 0.55s ease, transform 0.55s ease; opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .zpd--anim .zpd__ring, .zpd--anim .zpd__t, .zpd--anim .zpd__legend, .zpd--anim .zpd__author { transform: none; opacity: 1; }
+}
+
+.zpd__legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; max-width: 300px; flex: 0 1 300px; text-align: left; }
+.zpd__legend li {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  font-size: clamp(12.5px, 1.1vw, 14px);
+  line-height: 1.3;
+  color: var(--fg-3);
+}
+.zpd__legend strong { display: block; color: var(--fg); font-weight: 700; font-size: 1.05em; }
+.zpd__legend .zpd-hl { color: var(--nv); font-weight: 700; white-space: nowrap; }
+html[data-theme="light"] .zpd__legend .zpd-hl { color: var(--nv); }
+.zpd__legend-hl strong { color: var(--fg); }
+/* Mark the ZPD row as the "target" zone: a dashed green frame + a corner badge. */
+.zpd__legend-target {
+  position: relative;
+  margin: 10px 0;                /* extra breathing room from Can't do / Can do alone */
+  padding: 9px 13px;
+  border-radius: 12px;
+  border: 1.5px dashed rgba(118, 185, 0, 0.6);
+  background: rgba(118, 185, 0, 0.10);
+}
+.zpd__target {
+  position: absolute;
+  top: -11px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #b8f73a, #76b900);
+  color: #0b1d05;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(118, 185, 0, 0.4);
+  white-space: nowrap;
+}
+.zpd__sw { width: 15px; height: 15px; border-radius: 4px; flex: 0 0 auto; margin-top: 2px; }
+.zpd__sw--anx     { background: #4a78a0; box-shadow: 0 0 7px rgba(74, 120, 160, 0.6); }
+.zpd__sw--learn   { background: #76b900; box-shadow: 0 0 8px rgba(118, 185, 0, 0.6); }
+.zpd__sw--comfort { background: #0e5a28; box-shadow: 0 0 7px rgba(14, 90, 40, 0.6); }
+/* "Our Interpretation": photo + the same three zones re-read as rollout accuracy
+   (no circle, so the legend gets more room). */
+/* Tighter column gap here so the ZPPO legend gets more room (the circle still
+   matches Inspiration's size for a consistent pair). */
+.zpd--ours { align-items: center; gap: clamp(12px, 1.8vw, 22px); }
+.zpd--ours .zpd__legend { max-width: 440px; flex: 0 1 440px; gap: 16px; }
+.zpd__legend--rl li { font-size: clamp(13px, 1.15vw, 15px); }
+.zpd__legend--rl .rl-no { color: var(--neg); font-weight: 700; }
+.zpd__legend--rl .rl-up { color: var(--nv); font-weight: 700; }
+/* "Zone of Proximal Policy Optimization" must stay on one line. */
+.zpd__legend--rl .rl-zppo {
+  display: block;
+  white-space: nowrap;
+  color: var(--nv); font-weight: 800;
+  font-size: clamp(12.5px, 1.25vw, 14px);
+}
+html[data-theme="light"] .zpd__legend--rl .rl-up,
+html[data-theme="light"] .zpd__legend--rl .rl-zppo { color: var(--nv); }
+/* Placeholder shown when assets/byungkwan.jpg is missing. */
+.zpd__author-ph {
+  width: clamp(124px, 16vw, 158px);
+  aspect-ratio: 3 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px dashed var(--line);
+  background: var(--surface-3, var(--surface));
+  color: var(--fg-3);
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+/* Name lineage: ZPD → ZPPO, with the borrowed "Zone of Proximal" highlighted. */
+.zpd__borrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  margin: clamp(20px, 3vw, 30px) auto 0;
+}
+.zpd__borrow-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.zpd__borrow-tag {
+  flex: 0 0 auto;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+}
+.zpd__borrow-tag--ours {
+  color: #0b1d05;
+  background: linear-gradient(135deg, #b8f73a, #76b900);
+  border-color: rgba(118, 185, 0, 0.7);
+}
+html[data-theme="light"] .zpd__borrow-tag--ours { color: #0b1d05; }
+.zpd__borrow-name {
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(15px, 1.6vw, 19px);
+  font-weight: 600;
+  color: var(--fg-2);
+}
+.zpd__shared { font-weight: 700; }
+.zpd__borrow-name strong { color: var(--nv); font-weight: 800; }
+html[data-theme="light"] .zpd__borrow-name strong { color: var(--nv); }
+.zpd__borrow-link {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--fg-3);
+}
+.zpd__caption {
+  margin: clamp(18px, 2.6vw, 26px) auto 0;
+  max-width: 640px;
+  text-align: center;
+  font-size: clamp(13px, 1.2vw, 15px);
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--fg-2);
+}
+.zpd__caption strong { color: var(--nv); font-weight: 700; }
+html[data-theme="light"] .zpd__caption strong,
+.zpd__ref {
+  margin: 0 auto clamp(16px, 2.4vw, 26px);
+  max-width: 720px;
+  min-height: 3.2em;             /* reserve space so the typed citation doesn't shove the diagram */
+  text-align: center;
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.6;
+  color: var(--fg-3);
+}
+.zpd__ref em { font-style: italic; }
+.zpd__ref a { color: var(--fg-2); text-decoration: underline; text-underline-offset: 2px; transition: color 160ms var(--ease); }
+.zpd__ref a:hover { color: var(--nv); }
+/* Citation-count badge — shows how influential the source is, links to Scholar. */
+.zpd__ref a.zpd__cites {
+  margin-left: 6px;
+  color: inherit;                /* same as the rest of the citation, not green */
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 160ms var(--ease);
+}
+.zpd__ref a.zpd__cites strong { font-weight: 800; }
+.zpd__ref a.zpd__cites:hover { text-decoration: underline; text-underline-offset: 2px; }
+/* BCQ / NCQ construction diagram inside the Solution box (above the text). */
+.rq__diagram {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto clamp(20px, 3vw, 30px);
+}
+/* ---- HTML/CSS rebuild of the BCQ/NCQ construction diagram ----
+   A shared "Hard Question" forks into two stacked case-cards. Each card shows
+   the reformulated prompt (Question + verbatim instruction) and the candidate
+   blocks that get appended. */
+.dh {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  text-align: left;
+}
+/* Hard Question forks into two side-by-side branches: BCQ (left) · NCQ (right). */
+.dh__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  width: 100%;
+  align-items: start;
+}
+.dh__fork-svg { display: block; width: 50%; height: auto; color: var(--fg-3); margin: -2px 0 2px; }
+@media (max-width: 760px) {
+  .dh__grid { grid-template-columns: 1fr; }
+}
+
+/* ---- Staged "build" animation ----
+   While animating, pieces are hidden with opacity only (layout/height stays
+   reserved so the box never resizes) and faded in on cue; the case labels type
+   out into a line held open by min-height. */
+.dh__case { min-height: 1.45em; }
+.dh__case .rq__caret::before { background: currentColor; box-shadow: none; }
+.dh.is-anim .dh__qpill,
+.dh.is-anim .dh__fork-svg,
+.dh.is-anim .dh__label,
+.dh.is-anim .dh__card,
+.dh.is-anim .dh__cand,
+.dh.is-anim .dh__caption {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 480ms var(--ease), transform 480ms var(--ease);
+}
+.dh.is-anim .dh__qpill.is-in,
+.dh.is-anim .dh__fork-svg.is-in,
+.dh.is-anim .dh__label.is-in,
+.dh.is-anim .dh__card.is-in,
+.dh.is-anim .dh__cand.is-in,
+.dh.is-anim .dh__caption.is-in {
+  opacity: 1;
+  transform: none;
+}
+/* The two fork arrows reveal one at a time: cyan (→ BCQ) first, magenta (→ NCQ)
+   only after the BCQ branch finishes building. */
+.dh.is-anim .dh__fork-path { opacity: 0; transition: opacity 0.5s var(--ease); }
+.dh.is-anim .dh__fork-path.is-in { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .dh.is-anim .dh__qpill,
+  .dh.is-anim .dh__fork-svg,
+  .dh.is-anim .dh__label,
+  .dh.is-anim .dh__card { opacity: 1; transform: none; transition: none; }
+}
+.dh__top { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.dh__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(16px, 1.7vw, 20px);
+  font-weight: 700;
+}
+/* "Question Reformulation" pill stays centered (col 2); the "— no policy drift…"
+   line sits to its right (col 3), with a balancing spacer on the left (col 1). */
+.dh__intro-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+.dh__intro-row .dh__qpill { grid-column: 2; }
+.dh__intro-row .dh__intro-line--post { grid-column: 3; justify-self: start; text-align: left; }
+@media (max-width: 640px) {
+  .dh__intro-row { grid-template-columns: 1fr; justify-items: center; }
+  .dh__intro-row .dh__qpill,
+  .dh__intro-row .dh__intro-line--post { grid-column: 1; }
+  .dh__intro-row .dh__intro-line--post { justify-self: center; text-align: center; }
+}
+.dh__intro-line { font-size: clamp(17px, 1.8vw, 22px); font-weight: 600; color: var(--fg-2); }
+.dh__hard-def { font-size: 0.82em; font-weight: 500; color: var(--fg-3); }
+.dh__cite { color: var(--nv); text-decoration: none; font-weight: 600; }
+.dh__cite:hover { text-decoration: underline; text-underline-offset: 2px; }
+html[data-theme="light"] .dh__cite { color: var(--nv); }
+/* "hard question" and "policy drift" both read as the failure mode → red. */
+.dh__intro-line strong { color: var(--neg); font-weight: 700; }
+html[data-theme="light"] .dh__intro-line strong { color: var(--neg); }
+.dh__qpill {
+  display: inline-block;
+  padding: 0;
+  /* No box — the core idea reads as bold green text so it stands out on the
+     frosted-white box without a loud filled pill. */
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: var(--nv);
+  font-size: clamp(17px, 1.8vw, 22px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+html[data-theme="light"] .dh__qpill { color: var(--nv); }
+.dh__fork { font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; color: var(--fg-3); }
+.dh__branch { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.dh__case {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 9px;
+  font-size: clamp(14px, 1.3vw, 16px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+.dh__case-k {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.dh__case--ok { color: #22d3ee; }   /* cyan — matches the BCQ pill */
+.dh__case--no { color: #e879f9; }   /* magenta — matches the NCQ pill */
+html[data-theme="light"] .dh__case--ok { color: #0e7490; }
+html[data-theme="light"] .dh__case--no { color: #a21caf; }
+.dh__label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  font-size: clamp(12.5px, 1.1vw, 14px);
+  font-weight: 600;
+  color: var(--fg-2);
+}
+/* Subtitle text colored to match each pill (the pill keeps its own fill color). */
+.dh__label--bcq { color: #22d3ee; }   /* cyan */
+.dh__label--ncq { color: #e879f9; }   /* magenta */
+html[data-theme="light"] .dh__label--bcq { color: #0e7490; }
+html[data-theme="light"] .dh__label--ncq { color: #a21caf; }
+.dh__pill {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--nv);
+  color: #0b1d05;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+/* Distinct icon colors so BCQ and NCQ are told apart at a glance. */
+.dh__pill--bcq { background: #22d3ee; color: #06232a; }   /* cyan */
+.dh__pill--ncq { background: #e879f9; color: #3a0a44; }   /* magenta */
+.dh__card {
+  border-radius: 14px;
+  border: 1px solid rgba(118, 185, 0, 0.30);
+  background: rgba(7, 11, 5, 0.55);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+html[data-theme="light"] .dh__card {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(118, 185, 0, 0.35);
+}
+/* Example cards tinted to their branch accent: BCQ → cyan, NCQ → magenta. */
+.dh__card--bcq {
+  position: relative;
+  border-color: rgba(34, 211, 238, 0.45);
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.07), transparent 55%), rgba(7, 11, 5, 0.55);
+}
+/* "shuffle" badge that flashes on every swap cycle. */
+.dh__card--bcq .dh__cands { position: relative; }
+.dh__shuffle-tag {
+  position: absolute;
+  top: 50%;
+  right: clamp(6px, 3%, 16px);          /* sit in the empty space right of the boxes, not over them */
+  transform: translateY(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #22d3ee;
+  background: rgba(34, 211, 238, 0.18);
+  border: 1px solid rgba(34, 211, 238, 0.6);
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-theme="light"] .dh__shuffle-tag { color: #0e7490; border-color: rgba(14, 116, 144, 0.55); }
+/* Visible (fixed, fully opaque) once the cards are built — no pulsing. */
+.dh__card--bcq.is-built .dh__shuffle-tag { opacity: 1; animation: none; }
+@media (prefers-reduced-motion: reduce) { .dh__shuffle-tag { display: none; } }
+.dh__card--ncq {
+  border-color: rgba(232, 121, 249, 0.45);
+  background: linear-gradient(180deg, rgba(232, 121, 249, 0.07), transparent 55%), rgba(7, 11, 5, 0.55);
+}
+html[data-theme="light"] .dh__card--bcq {
+  border-color: rgba(14, 116, 144, 0.40);
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.10), transparent 55%), rgba(255, 255, 255, 0.7);
+}
+html[data-theme="light"] .dh__card--ncq {
+  border-color: rgba(162, 28, 175, 0.38);
+  background: linear-gradient(180deg, rgba(232, 121, 249, 0.10), transparent 55%), rgba(255, 255, 255, 0.7);
+}
+.dh__field { display: flex; flex-direction: column; gap: 5px; }
+.dh__field-k {
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+.dh__qtext {
+  margin: 0;
+  align-self: flex-start;            /* hug the text instead of spanning full width */
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 12.5px;
+  white-space: nowrap;
+  color: var(--fg-2);
+  padding: 8px 11px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+}
+html[data-theme="light"] .dh__qtext {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.20);
+}
+.dh__instr {
+  margin: 0;
+  font-size: clamp(13px, 1.2vw, 14px);
+  line-height: 1.5;
+  color: var(--fg);
+}
+.dh__instr code {
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 0.88em;
+  color: #f0a35a;                     /* matches the orange <candidate> tags in the boxes */
+  background: rgba(240, 163, 90, 0.13);
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+html[data-theme="light"] .dh__instr code { color: #b9701a; background: rgba(240, 163, 90, 0.16); }
+.dh__instr strong { color: var(--fg); font-weight: 700; }
+.dh__cands { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; }
+.dh__cand {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 92px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 9px 12px;
+  border-radius: 10px;
+}
+/* NCQ stacks its wrong-rollout candidates vertically so they read as a list in
+   the narrow column. */
+/* Responses stack in a single grid column sized to the widest box, so every
+   response box is the same width (and only as wide as its content needs). */
+.dh__card--bcq .dh__cands,
+.dh__card--ncq .dh__cands {
+  display: grid;
+  grid-template-columns: max-content;
+  justify-content: start;
+  gap: 8px;
+}
+.dh__card--ncq .dh__dots { text-align: center; }
+/* BCQ stacks its two candidates vertically (so the placeholder text fits on one
+   line) and shuffles them: the Teacher / Student cards swap top/bottom and back
+   (each arcs slightly sideways while crossing) to convey "shuffled & anonymized". */
+.dh__card--bcq.is-built .dh__cand--ok {
+  z-index: 2;
+  animation: dh-shuffle-a 10s ease-in-out infinite;
+}
+.dh__card--bcq.is-built .dh__cand--no {
+  z-index: 1;
+  animation: dh-shuffle-b 10s ease-in-out infinite;
+}
+@keyframes dh-shuffle-a {              /* top card → bottom slot (straight) */
+  0%, 25%   { transform: translateY(0); }
+  50%, 75%  { transform: translateY(calc(100% + 8px)); }
+  100%      { transform: translateY(0); }
+}
+@keyframes dh-shuffle-b {              /* bottom card → top slot (straight) */
+  0%, 25%   { transform: translateY(0); }
+  50%, 75%  { transform: translateY(calc(-100% - 8px)); }
+  100%      { transform: translateY(0); }
+}
+/* Disable the shuffle for reduced-motion and very narrow screens. */
+@media (prefers-reduced-motion: reduce) {
+  .dh__card--bcq.is-built .dh__cand--ok,
+  .dh__card--bcq.is-built .dh__cand--no { animation: none; }
+}
+@media (max-width: 560px) {
+  .dh__card--bcq.is-built .dh__cand--ok,
+  .dh__card--bcq.is-built .dh__cand--no { animation: none; }
+}
+.dh__cand--ok { background: rgba(118, 185, 0, 0.14); border: 1px solid rgba(118, 185, 0, 0.50); }
+.dh__cand--no { background: rgba(255, 95, 95, 0.12); border: 1px solid rgba(255, 95, 95, 0.50); }
+html[data-theme="light"] .dh__cand--no { background: rgba(195, 36, 58, 0.10); border-color: rgba(195, 36, 58, 0.45); }
+.dh__cand-tag {
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #f0a35a;                     /* neutral orange — doesn't imply correct/wrong */
+}
+html[data-theme="light"] .dh__cand-tag { color: #b9701a; }
+.dh__cand-body { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+/* Candidate content shown as a brace placeholder (mono, like the question one). */
+.dh__cand-ph {
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.dh__cand--ok .dh__cand-ph { color: #9bdc28; }
+.dh__cand--no .dh__cand-ph { color: #ff7a7a; }
+html[data-theme="light"] .dh__cand--ok .dh__cand-ph { color: var(--nv); }
+html[data-theme="light"] .dh__cand--no .dh__cand-ph { color: #c3243a; }
+.dh__cand-who { font-size: 14px; font-weight: 700; color: var(--fg); }
+.dh__ok { font-size: 13.5px; font-weight: 800; color: #9bdc28; white-space: nowrap; }
+.dh__no { font-size: 13.5px; font-weight: 800; color: #ff7a7a; white-space: nowrap; }
+html[data-theme="light"] .dh__ok { color: var(--nv); }
+html[data-theme="light"] .dh__no { color: #c3243a; }
+.dh__dots { align-self: center; color: #ff7a7a; font-size: 24px; font-weight: 800; flex: 0 0 auto; }
+html[data-theme="light"] .dh__dots { color: #c3243a; }
+.dh__note { font-size: 11.5px; font-weight: 500; color: var(--fg-3); }
+/* One-line takeaway under the whole diagram. */
+.dh__caption {
+  margin: 6px auto 0;
+  max-width: 660px;
+  text-align: center;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(13px, 1.2vw, 15px);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--fg-2);
+}
+.dh__caption strong { color: var(--nv); font-weight: 700; }
+html[data-theme="light"] .dh__caption strong { color: var(--nv); }
+
+/* Solution text matches the question's quote styling so the two boxes pair up. */
+.rq__solution-text {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  max-width: 880px;
+  margin-inline: auto;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(16px, 1.85vw, 23px);
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+  color: var(--fg);
+  /* normal (not balance) so the typed lines never re-flow mid/after typing. */
+  text-wrap: normal;
+}
+.rq__solution-text strong { color: var(--nv); font-weight: 700; }
+@media (prefers-reduced-motion: reduce) {
+  .rq__solution { transition: none; }
+}
 .prs__card {
   position: relative;
   padding: 22px 26px;
@@ -2554,9 +4039,119 @@ html[data-theme="light"] .impact-bar__num { color: #4a7800; }
   gap: 12px;
 }
 .prs__head {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+/* Problem header doubles as the accordion toggle (FAQ / show-more pattern):
+   the whole bar is clickable and the caret flips when the box unfolds. */
+.prs__head--toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  flex-wrap: nowrap;
+  cursor: pointer;
+}
+.prs__head-qwrap { display: inline-flex; flex-direction: column; gap: 1px; min-width: 0; }
+.prs__head-q {
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(15px, 1.3vw, 18px);
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  text-transform: none;
+  color: var(--fg);
+  transition: color 160ms var(--ease);
+}
+.prs__head-hint {
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(12.5px, 1.05vw, 14px);
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  text-transform: none;
+  white-space: nowrap;
+  color: var(--fg);
+  transition: color 160ms var(--ease);
+}
+.prs__head--toggle:hover .prs__head-hint { color: #ff6b7a; }
+html[data-theme="light"] .prs__head--toggle:hover .prs__head-hint { color: #c3243a; }
+.prs__head-right { margin-left: auto; display: inline-flex; align-items: center; gap: 9px; flex-shrink: 0; }
+.prs__head-caret {
+  flex-shrink: 0;
+  color: currentColor;
+  opacity: 0.85;
+  transition: transform 260ms var(--ease), opacity 160ms var(--ease);
+}
+.prs__head--toggle:hover .prs__head-caret { opacity: 1; }
+.prs__head--toggle[aria-expanded="true"] .prs__head-caret { transform: rotate(180deg); }
+/* "Tap here" finger: bobs continuously with a ripple while the box is folded,
+   inviting the reader to click. Removed once unfolded. */
+.prs__tap {
+  position: relative;
+  flex-shrink: 0;
+  font-size: 20px;
+  line-height: 1;
+  color: #ff6b7a;                       /* drives the ripple ring color */
+  animation: prs-tap 1.4s ease-in-out infinite;
+}
+html[data-theme="light"] .prs__tap { color: #c3243a; }
+/* Ripple pulses outward from the fingertip toward the caret. */
+.prs__tap::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0;
+  pointer-events: none;
+  animation: prs-tap-ring 1.4s ease-out infinite;
+}
+.prs__head--toggle[aria-expanded="true"] .prs__head-hint,
+.prs__head--toggle[aria-expanded="true"] .prs__tap { display: none; }
+@keyframes prs-tap {
+  0%   { transform: translateX(0); }
+  28%  { transform: translateX(6px); }
+  56%  { transform: translateX(0); }
+  100% { transform: translateX(0); }
+}
+@keyframes prs-tap-ring {
+  0%   { transform: scale(0.3); opacity: 0; }
+  28%  { opacity: 0.55; }
+  70%, 100% { transform: scale(1.7); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .prs__tap { animation: none; }
+  .prs__tap::after { display: none; }
+}
+/* On narrow screens let the invite drop below the PROBLEM tag instead of
+   overflowing the header bar. */
+@media (max-width: 560px) {
+  .prs__head--toggle { flex-wrap: wrap; }
+  .prs__head-right { margin-left: 0; }
+  .prs__head-hint { white-space: normal; }
+}
+.prs__head--toggle:focus { outline: none; }
+.prs__head--toggle:focus-visible { outline: none; }
+/* Short summary line that sits next to the PROBLEM tag (neutral, non-uppercase
+   so it reads as a subtitle, not a second label). */
+.prs__summary {
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(13px, 1.05vw, 15px);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  text-transform: none;
+  color: var(--fg-2);
 }
 .prs__dot {
   width: 11px; height: 11px;
@@ -2580,6 +4175,465 @@ html[data-theme="light"] .impact-bar__num { color: #4a7800; }
 }
 .prs__card strong { color: var(--fg); font-weight: 700; }
 
+/* ---------- Problem "Takeaway" carousel ---------- */
+/* ============================================================
+   Method — animated ZPPO training loop  (#methodLoop)
+   Nodes/arrows/chips reveal in sequence (driven by script.js)
+   to narrate: dataset → batch → one question → teacher+student
+   rollouts → BCQ/NCQ → replay buffer, then loop.
+   ============================================================ */
+.mloop {
+  position: relative;
+  width: min(1120px, calc(100% - 40px));
+  margin: 8px auto 0;
+  padding: clamp(18px, 2.4vw, 28px);
+  border-radius: var(--radius-lg, 20px);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  overflow: hidden;
+}
+.mloop__bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: clamp(18px, 2.4vw, 28px);
+}
+.mloop__step {
+  flex: 0 0 auto;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(118, 185, 0, 0.06);
+}
+.mloop__step b { color: var(--nv); font-weight: 800; }
+.mloop__caption {
+  margin: 0;
+  flex: 1 1 260px;
+  min-width: 0;
+  min-height: 2.6em;
+  display: flex;
+  align-items: center;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(14px, 1.5vw, 17px);
+  font-weight: 600;
+  color: var(--fg);
+  line-height: 1.4;
+  transition: opacity 280ms var(--ease);
+}
+
+.mloop__flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.1vw, 16px);
+  flex-wrap: wrap;
+}
+.mloop__col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ---- generic node ---- */
+.mloop__node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  padding: 12px 14px;
+  min-width: 98px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(7, 11, 5, 0.5);
+  opacity: 0;
+  transform: translateY(10px) scale(0.96);
+  transition: opacity 420ms var(--ease), transform 420ms var(--ease),
+              border-color 300ms var(--ease), box-shadow 300ms var(--ease);
+}
+html[data-theme="light"] .mloop__node { background: rgba(255, 255, 255, 0.72); }
+.mloop__node.is-in { opacity: 1; transform: none; }
+
+.mloop__emoji { font-size: 26px; line-height: 1; }
+.mloop__name  { font-weight: 700; font-size: 14px; color: var(--fg); white-space: nowrap; }
+.mloop__note  { font-size: 11px; color: var(--fg-2); white-space: nowrap; }
+
+/* ---- arrows between stages ---- */
+.mloop__arrow {
+  align-self: center;
+  flex: 0 0 auto;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fg-2);
+  opacity: 0.16;
+  transform: translateX(-4px);
+  transition: opacity 360ms var(--ease), color 360ms var(--ease), transform 360ms var(--ease);
+}
+.mloop__arrow.is-in { opacity: 1; color: var(--nv); transform: none; }
+
+/* ---- dataset / replay buffer ---- */
+.mloop__node--db.is-in {
+  border-color: rgba(118, 185, 0, 0.5);
+  box-shadow: 0 0 0 1px rgba(118, 185, 0, 0.12), 0 6px 22px rgba(118, 185, 0, 0.12);
+}
+.mloop__node--buffer.is-in.is-active {
+  border-color: rgba(240, 163, 90, 0.55);
+  box-shadow: 0 0 18px rgba(240, 163, 90, 0.18);
+}
+.mloop__badge {
+  position: absolute;
+  top: -9px; right: -9px;
+  min-width: 20px; height: 20px;
+  padding: 0 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; font-weight: 700;
+  color: #1a1205; background: #f0a35a;
+  box-shadow: 0 0 10px rgba(240, 163, 90, 0.5);
+}
+.mloop__node--buffer.is-pulse .mloop__badge { animation: mloop-pop 380ms var(--ease); }
+@keyframes mloop-pop { 0% { transform: scale(1); } 42% { transform: scale(1.5); } 100% { transform: scale(1); } }
+
+/* ---- batch chips ---- */
+.mloop__node--batch { min-width: 116px; }
+.mloop__chips {
+  display: flex; gap: 5px; margin: 2px 0;
+  flex-wrap: wrap; justify-content: center; max-width: 128px;
+}
+.mloop__chip {
+  width: 22px; height: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; font-weight: 700;
+  opacity: 0; transform: scale(0.35);
+  transition: opacity 300ms var(--ease), transform 300ms var(--ease);
+}
+.mloop__chip.is-in { opacity: 1; transform: none; }
+.mloop__chip--new    { color: #0b1d05; background: #76b900; }
+.mloop__chip--replay { color: #1a1205; background: #f0a35a; box-shadow: 0 0 8px rgba(240, 163, 90, 0.5); }
+
+/* ---- question ---- */
+.mloop__node--q.is-in { border-color: rgba(255, 255, 255, 0.2); }
+
+/* ---- teacher / student rollouts ---- */
+.mloop__rolls { display: inline-flex; gap: 4px; margin: 2px 0; }
+.mloop__roll {
+  width: 19px; height: 19px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 5px; font-size: 12px; font-style: normal; font-weight: 800;
+  opacity: 0; transform: scale(0.3);
+  transition: opacity 240ms var(--ease), transform 240ms var(--ease);
+}
+.mloop__roll.is-in { opacity: 1; transform: none; }
+.mloop__roll.ok { color: #0b1d05; background: #76b900; }
+.mloop__roll.no { color: #fff; background: rgba(255, 95, 95, 0.85); }
+html[data-theme="light"] .mloop__roll.no { background: rgba(195, 36, 58, 0.85); }
+.mloop__acc {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; color: var(--fg-2);
+  opacity: 0; transition: opacity 280ms var(--ease);
+}
+.mloop__acc.is-in { opacity: 1; }
+.mloop__node--student .mloop__acc { color: #ffb38a; }
+.mloop__node--teacher.is-in { border-color: rgba(118, 185, 0, 0.4); }
+.mloop__node--student.is-in { border-color: rgba(240, 163, 90, 0.4); }
+
+/* ---- BCQ / NCQ boxes ---- */
+.mloop__pill {
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 800; font-size: 13px; letter-spacing: 0.08em;
+  padding: 3px 12px; border-radius: 999px;
+}
+.mloop__pill--bcq { color: #042027; background: #22d3ee; }
+.mloop__pill--ncq { color: #260a2b; background: #e879f9; }
+.mloop__node--bcq.is-in { border-color: rgba(34, 211, 238, 0.5);  box-shadow: 0 0 16px rgba(34, 211, 238, 0.16); }
+.mloop__node--ncq.is-in { border-color: rgba(232, 121, 249, 0.5); box-shadow: 0 0 16px rgba(232, 121, 249, 0.16); }
+
+/* ---- feedback ribbon ---- */
+.mloop__feedback {
+  position: relative;
+  margin-top: clamp(16px, 2vw, 24px);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px dashed rgba(240, 163, 90, 0.5);
+  background: rgba(240, 163, 90, 0.07);
+  font-size: clamp(13px, 1.4vw, 15px);
+  color: var(--fg);
+  text-align: center;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 420ms var(--ease), transform 420ms var(--ease);
+}
+.mloop__feedback.is-in { opacity: 1; transform: none; }
+.mloop__feedback strong { color: #f0a35a; font-weight: 800; }
+.mloop__feedback-arrow { color: #f0a35a; font-weight: 800; margin-right: 4px; }
+
+/* ---- flying question tokens (DB/buffer → batch → question → solve → buffer) ---- */
+.mloop__fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 4;
+}
+.mloop__fly {
+  position: absolute;
+  top: 0; left: 0;
+  width: 22px; height: 22px;
+  margin: -11px 0 0 -11px;            /* center the box on its translate point */
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; font-weight: 700;
+  will-change: transform, opacity;
+}
+.mloop__fly--new    { color: #0b1d05; background: #76b900; box-shadow: 0 0 10px rgba(118, 185, 0, 0.55); }
+.mloop__fly--replay { color: #1a1205; background: #f0a35a; box-shadow: 0 0 10px rgba(240, 163, 90, 0.6); }
+.mloop__fly--q      { color: #042027; background: #d8f6ff; box-shadow: 0 0 10px rgba(34, 211, 238, 0.5); }
+
+/* ---- "too hard → replay buffer" return arrow ---- */
+.mloop__arc { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 3; }
+.mloop__arc-path {
+  fill: none;
+  stroke: #f0a35a;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(240, 163, 90, 0.5));
+}
+.mloop__arc-label {
+  position: absolute;
+  transform: translate(-50%, -50%) scale(0.8);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; font-weight: 700;
+  color: #1a1205; background: #f0a35a;
+  padding: 3px 9px; border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 0 10px rgba(240, 163, 90, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.mloop__arc-label.is-in { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+/* ---- Replay control (appears when a cycle finishes) ---- */
+.mloop__replay {
+  flex: 0 0 auto;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #0b1d05;
+  background: linear-gradient(135deg, #b8f73a, #76b900);
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 16px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(118, 185, 0, 0.3);
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.mloop__replay.is-show { display: inline-flex; }
+.mloop__replay:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(118, 185, 0, 0.42); }
+.mloop__replay-ic { font-size: 15px; line-height: 1; }
+
+/* ---- fade between cycles ---- */
+.mloop.is-fading .mloop__flow,
+.mloop.is-fading .mloop__feedback { opacity: 0.16; transition: opacity 380ms var(--ease); }
+
+@media (max-width: 760px) {
+  .mloop__flow { flex-direction: column; align-items: center; }
+  .mloop__arrow { transform: rotate(90deg); }
+  .mloop__arrow.is-in { transform: rotate(90deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mloop__node, .mloop__chip, .mloop__roll, .mloop__acc,
+  .mloop__arrow, .mloop__feedback, .mloop__caption,
+  .mloop__arc-path, .mloop__arc-label, .mloop__replay { transition: none !important; }
+  .mloop__node--buffer.is-pulse .mloop__badge { animation: none !important; }
+}
+
+.takeaway { position: relative; }
+/* The slide box stays collapsed until the reader clicks "What is the Problem?".
+   The 0fr -> 1fr grid trick animates to the real content height (no fixed cap). */
+.takeaway__reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 460ms var(--ease), opacity 340ms var(--ease);
+}
+.takeaway.is-revealed .takeaway__reveal {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.takeaway__viewport { overflow: hidden; min-height: 0; }
+/* Position dots only appear once the box is unfolded (no empty gap when folded). */
+.takeaway:not(.is-revealed) .takeaway__controls { display: none; }
+.takeaway__track {
+  display: flex;
+  transition: transform 380ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+.takeaway__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  padding: 4px 2px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.takeaway__num {
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(11px, 1vw, 12.5px);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #ff6b7a;                 /* matches the Problem accent */
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 80, 95, 0.12);
+  border: 1px solid rgba(255, 80, 95, 0.32);
+}
+html[data-theme="light"] .takeaway__num {
+  color: #c3243a;
+  background: rgba(195, 36, 58, 0.08);
+  border-color: rgba(195, 36, 58, 0.28);
+}
+.takeaway__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px 10px;
+}
+/* The whole ref is a single box (so the "and" / "+" glue is enclosed too),
+   tinted to match the red-outlined rows it points at in the TL;DR table. */
+.takeaway__ref {
+  display: inline-block;
+  padding: 3px 11px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 80, 95, 0.45);
+  background: rgba(255, 80, 95, 0.10);
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(13px, 1.15vw, 14.5px);
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: var(--fg);            /* "and" / "+" share the chip color, not muted */
+  white-space: normal;
+  line-height: 1.5;
+}
+html[data-theme="light"] .takeaway__ref {
+  border-color: rgba(195, 36, 58, 0.40);
+  background: rgba(195, 36, 58, 0.08);
+}
+.takeaway__ref sup {
+  font-size: 0.72em;
+  color: inherit;
+}
+/* Method names: bold emphasis within the single ref box. */
+.takeaway__chip { color: var(--fg); font-weight: 700; white-space: nowrap; }
+.takeaway__slide p {
+  margin: 0;
+  font-size: clamp(16px, 1.5vw, 20px);
+  line-height: 1.55;
+  font-weight: 500;
+  color: var(--fg);
+}
+.takeaway__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+/* Prev/next arrows flank the dots so it's obvious the problems slide. */
+.takeaway__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--fg-2);
+  cursor: pointer;
+  transition: color 160ms var(--ease), border-color 160ms var(--ease),
+              background 160ms var(--ease), transform 160ms var(--ease);
+}
+.takeaway__nav:hover {
+  color: var(--fg);
+  border-color: rgba(255, 80, 95, 0.5);
+  background: rgba(255, 80, 95, 0.08);
+  transform: translateY(-1px);
+}
+.takeaway__nav:active { transform: translateY(0); }
+html[data-theme="light"] .takeaway__nav { background: rgba(0, 0, 0, 0.03); }
+/* Navigation hint below the controls (keys on desktop, swipe on touch). */
+.takeaway__hint {
+  margin: 0;
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--fg-3);
+}
+.takeaway__hint.is-hidden { display: none; }
+.takeaway__hint kbd {
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 9.5px;
+  padding: 1px 5px;
+  margin: 0 1px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--fg-2);
+}
+html[data-theme="light"] .takeaway__hint kbd { background: rgba(0, 0, 0, 0.04); }
+.takeaway__hint-touch { display: none; }   /* desktop default: show the keys hint */
+@media (hover: none), (pointer: coarse) {
+  .takeaway__hint-touch { display: inline; }
+  .takeaway__hint-keys { display: none; }
+}
+/* Controls hold prev/next arrows + the position dots; shown once box unfolds. */
+.takeaway__dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.takeaway__dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: var(--fg-3);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 160ms var(--ease), transform 160ms var(--ease), background 160ms var(--ease);
+}
+.takeaway__dot:hover { opacity: 0.8; }
+.takeaway__dot.is-active {
+  opacity: 1;
+  background: #ff6b7a;
+  transform: scale(1.25);
+}
+html[data-theme="light"] .takeaway__dot.is-active { background: #c3243a; }
+@media (prefers-reduced-motion: reduce) {
+  .takeaway__track { transition: none; }
+  .takeaway__reveal { transition: none; }
+}
+
 /* Dash-bullet list inside a prs card. Each item is prefixed with an en-dash
    so the card reads like a short note rather than a wall of prose. */
 .prs__list {
@@ -2594,7 +4648,7 @@ html[data-theme="light"] .impact-bar__num { color: #4a7800; }
   position: relative;
   padding-left: 22px;
   color: var(--fg);
-  font-size: clamp(19px, 1.65vw, 23px);
+  font-size: clamp(15px, 1.3vw, 18px);
   line-height: 1.55;
   font-weight: 500;
 }
@@ -2634,7 +4688,7 @@ html[data-theme="light"] .impact-bar__num { color: #4a7800; }
 
 html[data-theme="light"] .prs__card--problem  .prs__head { color: #c3243a; }
 html[data-theme="light"] .prs__card--question .prs__head { color: #2f63b8; }
-html[data-theme="light"] .prs__card--solution .prs__head { color: #4a7800; }
+html[data-theme="light"] .prs__card--solution .prs__head { color: var(--nv); }
 
 /* ---------- Method figures + pills ---------- */
 .figure {
@@ -2646,6 +4700,19 @@ html[data-theme="light"] .prs__card--solution .prs__head { color: #4a7800; }
 }
 .figure--wide img { width: 100%; border-radius: var(--radius); }
 .figure img { border-radius: var(--radius); width: 100%; }
+/* Placeholder shown when a figure image is missing (e.g. assets/figures/figure2.png). */
+.figure__ph {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 220px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--line);
+  background: repeating-linear-gradient(45deg, rgba(118, 185, 0, 0.05) 0 14px, transparent 14px 28px), var(--surface-2, var(--surface));
+  color: var(--fg-2);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13.5px;
+  text-align: center;
+  padding: 24px;
+}
 .figure figcaption {
   margin-top: 12px;
   color: var(--fg-2);
@@ -2921,13 +4988,30 @@ html[data-theme="dark"] .results tbody tr:nth-child(even) td.col-method { backgr
   background: #0c0e09;
 }
 html[data-theme="light"] .qual__media img { background: #f0f4e8; }
+/* Placeholder shown when an example figure (assets/qualitative/*.png) is missing. */
+.qual__imgph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--line);
+  background:
+    repeating-linear-gradient(45deg, rgba(118, 185, 0, 0.05) 0 14px, transparent 14px 28px),
+    var(--surface-3, var(--surface));
+  color: var(--fg-2);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
 .qual__q {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 13.5px;
+  font-size: clamp(15px, 1.5vw, 17px);
+  line-height: 1.65;
   color: var(--fg);
   background: var(--surface-3);
   border: 1px solid var(--line);
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: var(--radius-sm);
 }
 .qual__meta {
@@ -2944,6 +5028,56 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
 }
 .qual__chip--ref { color: var(--nv); border-color: rgba(118,185,0,0.45); background: var(--nv-soft); }
 .qual__chip--bad { color: #ef8b8b; border-color: rgba(230,74,74,0.35); background: rgba(230,74,74,0.10); }
+.qual__q .qual__ans { color: var(--fg); font-weight: 400; }
+/* "Initial Rollout Accuracy" stat — grows to fill the empty space below the Q/A
+   box (the BCQ/NCQ column is taller), with a big highlighted 0%. */
+.qual__stat {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  min-height: 130px;
+  padding: 18px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(120% 90% at 50% 120%, rgba(255, 159, 67, 0.12), rgba(255, 159, 67, 0) 70%),
+    var(--surface-3);
+}
+.qual__stat-label {
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(12px, 1.3vw, 14px);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+.qual__stat-model {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.qual__stat-val {
+  margin-top: 8px;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: clamp(44px, 7vw, 68px);
+  font-weight: 800;
+  line-height: 1;
+  color: #ff9f43;
+  text-shadow: 0 0 24px rgba(255, 159, 67, 0.45);
+}
+.qual__stat-hard {
+  font-size: 0.3em;
+  font-weight: 700;
+  color: var(--fg-2);
+  vertical-align: middle;
+  letter-spacing: 0.02em;
+  text-shadow: none;
+}
 
 .qual__cards {
   display: grid;
@@ -2963,10 +5097,12 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
 }
 .qual__card h4 {
   margin: 0;
-  font-size: 13.5px;
-  font-weight: 700;
+  font-size: clamp(19px, 2vw, 25px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
 }
 .qual__card h4 .badge {
@@ -2979,9 +5115,14 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
 }
 .qual__card--bcq h4 .badge { background: var(--nv-soft); color: var(--nv); border: 1px solid rgba(118,185,0,0.45); }
 .qual__card--ncq h4 .badge { background: rgba(80,180,255,0.10); color: #6cc8ff; border: 1px solid rgba(80,180,255,0.35); }
+/* BCQ = cyan, NCQ = magenta — solid lettering (matches the section title). */
+.qual__card--bcq h4 { color: #22d3ee; }
+.qual__card--ncq h4 { color: #e879f9; }
+.qual__card--bcq { border-color: rgba(34, 211, 238, 0.40); }
+.qual__card--ncq { border-color: rgba(232, 121, 249, 0.40); }
 .qual__card .trace {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 12px;
+  font-size: 13.5px;
   line-height: 1.65;
   color: var(--fg-2);
   background: var(--surface-3);
@@ -3010,13 +5151,19 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
 .qual__card .verdict {
   display: inline-flex;
   align-items: center;
+  align-self: flex-start;
   gap: 6px;
-  font-size: 12.5px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   margin-top: auto;
+  padding: 5px 16px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
 }
-.verdict--ok { color: var(--nv); }
-.verdict--no { color: var(--neg); }
+.verdict--ok { color: var(--nv);  background: rgba(118, 185, 0, 0.14); }
+.verdict--no { color: var(--neg); background: rgba(230, 74, 74, 0.14); }
 
 .qual__nav {
   position: absolute;
@@ -3079,6 +5226,38 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
   font-size: 0.95em;
   line-height: 1.4;
 }
+/* Make the final \boxed{} answer pop a bit more inside the BCQ / NCQ traces. */
+.qual__card .trace .boxed {
+  font-size: 1.05em;
+  padding: 2px 11px;
+  box-shadow: 0 0 12px rgba(118, 185, 0, 0.28);
+}
+/* Explicit "omitted reasoning" marker inside the BCQ / NCQ traces. */
+.qual__card .trace .trace-omit {
+  color: #d39a4e;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+/* Correct = green box, wrong = red box (paired with the O / X mark). */
+.boxed--no { border-color: var(--neg); background: rgba(230, 74, 74, 0.12); color: var(--fg); }
+.qual__card .trace .boxed--no { box-shadow: 0 0 12px rgba(230, 74, 74, 0.30); }
+/* Inline "Correct" / "Wrong" verdict box next to the boxed answer. */
+.ans-verdict {
+  display: inline-block;
+  margin-left: 9px;
+  padding: 2px 12px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.92em;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.ans-verdict--ok { color: var(--nv);  background: rgba(118, 185, 0, 0.14); }
+.ans-verdict--no { color: var(--neg); background: rgba(230, 74, 74, 0.14); }
 
 /* ---------- Footer ---------- */
 .footer {
@@ -3094,6 +5273,10 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
   gap: 18px;
   flex-wrap: wrap;
 }
+/* logo left · copyright centered · Top right */
+.footer__brand { order: 1; }
+.footer__meta  { order: 2; flex: 1; text-align: center; }
+.footer__top   { order: 3; }
 .footer__logo {
   height: 22px;
   width: auto;
@@ -3101,7 +5284,7 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
   color: var(--fg-2);
   opacity: 0.9;
 }
-.footer__meta { color: var(--fg-2); font-size: 13.5px; flex: 1; }
+.footer__meta { color: var(--fg-2); font-size: 13.5px; }
 .footer__sep { color: var(--fg-3); margin: 0 6px; }
 .footer__top {
   display: inline-flex;
