@@ -878,7 +878,7 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
       }
     });
   }, { threshold: 0.08 });
-  document.querySelectorAll('.section, .hero__teaser, .impact__card, .ps__card, .pill, .figure, .hp-card').forEach(el => {
+  document.querySelectorAll('.section, .figure').forEach(el => {
     el.classList.add('to-reveal');
     obs.observe(el);
   });
