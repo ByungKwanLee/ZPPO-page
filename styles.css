@@ -397,9 +397,9 @@ html[data-theme="light"] .hero__zppo {
   100% { opacity: 1; transform: translateY(0) scale(1); filter: drop-shadow(0 8px 30px rgba(118,185,0,0.28)) blur(0); }
 }
 @keyframes full-zoom {
-  0%   { opacity: 0;  transform: translateY(calc(-7vw - 12px)) scale(1.35); }
-  18%  { opacity: 1;  transform: translateY(calc(-7vw - 12px)) scale(1.35); }
-  58%  { opacity: 1;  transform: translateY(calc(-7vw - 12px)) scale(1.35); }
+  0%   { opacity: 0;  transform: translateY(calc(-7vw - 12px)) scale(var(--full-peak, 1.35)); }
+  18%  { opacity: 1;  transform: translateY(calc(-7vw - 12px)) scale(var(--full-peak, 1.35)); }
+  58%  { opacity: 1;  transform: translateY(calc(-7vw - 12px)) scale(var(--full-peak, 1.35)); }
   100% { opacity: 1;  transform: translateY(0) scale(1); }
 }
 @keyframes cap-lift {
@@ -442,7 +442,7 @@ html[data-theme="light"] .hero__zppo {
   font-family: "JetBrains Mono", "Fira Code", "Consolas", "Courier New", ui-monospace, monospace;
   font-feature-settings: "ss01", "cv01", "calt";
   font-weight: 500;
-  font-size: clamp(24px, 4.0vw, 46px);
+  font-size: var(--full-fs, clamp(24px, 4.0vw, 46px));
   color: var(--fg-2);
   margin-top: 16px;
   letter-spacing: 0.002em;
@@ -451,6 +451,13 @@ html[data-theme="light"] .hero__zppo {
   transform-origin: 50% 0%;
   will-change: transform, opacity;
   animation: full-zoom 2.7s cubic-bezier(0.65,0.05,0.36,1) 0s backwards;
+}
+/* JS fits the full title to the viewport: on wide screens it sizes the line to
+   fill the available width on a single line (.is-oneline); on narrow screens the
+   class is removed so the words wrap with the responsive clamp() below. */
+.hero__full.is-oneline {
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 .hero__full-word {
   display: inline-block;
@@ -1237,20 +1244,6 @@ html[data-theme="light"] {
   max-width: 780px; margin: clamp(16px, 2vw, 24px) auto 0;
   text-align: center; font-size: 12.5px; line-height: 1.55; color: var(--fg-3);
 }
-.grad__replay {
-  display: flex; align-items: center; gap: 9px; width: fit-content;
-  margin: clamp(14px, 2vw, 20px) auto 0;
-  padding: 11px 28px; border-radius: 10px;
-  border: 1px solid rgba(118, 185, 0, 0.5);
-  background: rgba(118, 185, 0, 0.12);
-  color: var(--nv);
-  font-family: 'Rubik', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 15px; font-weight: 700; cursor: pointer;
-  transition: background 160ms var(--ease), border-color 160ms var(--ease);
-}
-.grad__replay:hover { background: rgba(118, 185, 0, 0.22); border-color: rgba(118, 185, 0, 0.8); }
-.grad__replay-ic { font-size: 17px; line-height: 1; }
-
 /* Method figure: reveal its panels in reading order — (a) → (b) → (c) → (d) —
    by wiping the clip-path, so the reader takes it in one piece at a time. */
 #methodFigure { position: relative; --fig-crop: 1%; }
@@ -3683,6 +3676,7 @@ html[data-theme="light"] .zpd__caption strong,
 .dh.is-anim .dh__label,
 .dh.is-anim .dh__card,
 .dh.is-anim .dh__cand,
+.dh.is-anim .dh__dots,
 .dh.is-anim .dh__caption {
   opacity: 0;
   transform: translateY(8px);
@@ -3693,6 +3687,7 @@ html[data-theme="light"] .zpd__caption strong,
 .dh.is-anim .dh__label.is-in,
 .dh.is-anim .dh__card.is-in,
 .dh.is-anim .dh__cand.is-in,
+.dh.is-anim .dh__dots.is-in,
 .dh.is-anim .dh__caption.is-in {
   opacity: 1;
   transform: none;

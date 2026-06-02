@@ -14,6 +14,82 @@
   });
 })();
 
+// ---------- Hero · dynamic title fit ----------
+// The full title ("Zone of Proximal Policy Optimization") plays a zoom-in
+// entrance that, on some monitor widths, used to overflow and get clipped at
+// the screen edges. We measure the line's natural width and size it so it fills
+// the available width on a single line — and so even the zoom-in peak never
+// exceeds the viewport. On narrow screens we fall back to wrapping (the CSS
+// clamp), and the entrance-zoom peak (--full-peak) is reduced to fit.
+(() => {
+  const full = document.querySelector('.hero__full');
+  if (!full) return;
+
+  const MAX_FS      = 46;    // upper bound (matches the original clamp())
+  const MIN_ONELINE = 24;    // below this, wrap instead of shrinking to fit
+  const PEAK        = 1.35;  // entrance-zoom peak (matches @keyframes full-zoom)
+  const SAFETY      = 8;     // px breathing room so glyph edges never touch
+
+  // Measure how many px wide the single-line title is, per 1px of font-size,
+  // using an off-screen clone so the live layout is never disturbed.
+  function widthPerPx() {
+    const clone = full.cloneNode(true);
+    clone.classList.add('is-oneline');
+    clone.style.cssText =
+      'position:absolute;left:-99999px;top:0;visibility:hidden;pointer-events:none;' +
+      'max-width:none;white-space:nowrap;flex-wrap:nowrap;animation:none;' +
+      'transform:none;font-size:100px;';
+    document.body.appendChild(clone);
+    const w = clone.getBoundingClientRect().width;
+    clone.remove();
+    return w / 100;
+  }
+
+  // The clip boundary is the .hero box (it has overflow:hidden), whose padding
+  // box is as wide as the viewport — so the centered title may use the full
+  // width before being clipped. That lets wide monitors keep the full zoom while
+  // narrower ones scale down just enough to stay on-screen.
+  function availWidth() {
+    const hero = full.closest('.hero');
+    if (hero && hero.clientWidth) return hero.clientWidth;
+    const title = full.closest('.hero__title') || full.parentElement;
+    return (title ? title.clientWidth : window.innerWidth);
+  }
+
+  function fit() {
+    const avail = availWidth() - SAFETY * 2;
+    if (avail <= 0) return;
+    const ratio = widthPerPx();
+    if (!ratio) return;
+
+    const oneLineFs = Math.min(MAX_FS, avail / ratio);
+    if (oneLineFs >= MIN_ONELINE) {
+      // Single line that fills the width; cap the zoom peak so it never clips.
+      full.classList.add('is-oneline');
+      full.style.setProperty('--full-fs', oneLineFs.toFixed(2) + 'px');
+      const settledW = ratio * oneLineFs;
+      const peak = Math.max(1, Math.min(PEAK, avail / settledW));
+      full.style.setProperty('--full-peak', peak.toFixed(3));
+    } else {
+      // Too narrow for one line — let the words wrap via the CSS clamp.
+      full.classList.remove('is-oneline');
+      full.style.removeProperty('--full-fs');
+      full.style.setProperty('--full-peak', '1.12');
+    }
+  }
+
+  fit();
+  // Font metrics change once the web font loads — re-fit when it's ready.
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+  window.addEventListener('load', fit);
+
+  let resizeT;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(fit, 120);
+  }, { passive: true });
+})();
+
 // ---------- TL;DR · Performance "Train" interactive animation ----------
 // User picks a student model size (0.8B / 2B / 4B / 9B), then clicks "Train".
 // Bars grow from center 0 outward, numbers count up from +0.0 to their final
@@ -1434,7 +1510,13 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
         if (i >= els.length) { card.classList.add('is-built'); if (done) done(); return; }
         const el = els[i++];
         const cand = el.closest('.dh__cand');
-        if (cand) cand.classList.add('is-in');   // reveal the response box as it types
+        if (cand) {
+          // Reveal a "⋮" (dh__dots) that sits just before this response, so the
+          // dots appear in sequence right before the following box — never first.
+          const prev = cand.previousElementSibling;
+          if (prev && prev.classList.contains('dh__dots')) prev.classList.add('is-in');
+          cand.classList.add('is-in');   // reveal the response box as it types
+        }
         typeInto(el, fullOf(el), { base: 13, jitter: 10, quick: true }, () => wait(next, 110));
       })();
     }
@@ -1507,7 +1589,7 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
     dh.querySelectorAll('.dh__cand').forEach((c) => { c.style.minWidth = ''; c.style.minHeight = ''; });
     const introEl = dh.querySelector('.dh__intro');
     if (introEl) introEl.style.minWidth = '';
-    dh.querySelectorAll('.dh__qpill, .dh__fork-svg, .dh__fork-path, .dh__label, .dh__card, .dh__cand, .dh__caption')
+    dh.querySelectorAll('.dh__qpill, .dh__fork-svg, .dh__fork-path, .dh__label, .dh__card, .dh__cand, .dh__dots, .dh__caption')
       .forEach((el) => el.classList.add('is-in'));
     dh.querySelectorAll('.dh__card').forEach((c) => c.classList.add('is-built'));
   }
@@ -2282,15 +2364,20 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
     const labZ = el('text', { class: 'grad-endlabel grad-endlabel--zppo', x: exZ + 7, y: eyZ - 4, 'text-anchor': 'start' }, svg);
     const labG = el('text', { class: 'grad-endlabel grad-endlabel--grpo', x: exZ + 7, y: eyG + 11, 'text-anchor': 'start' }, svg);
 
-    built.push({ cr, dotZ, dotG, labZ, labG, d });
+    built.push({ cr, g, dotZ, dotG, labZ, labG, d });
   });
 
-  function render(p) {
+  // setState drives both the draw-in progress (p: 0→1) and a master opacity so
+  // the loop can fade the whole chart out before redrawing from scratch.
+  function setState(p, opacity) {
     built.forEach((b) => {
       b.cr.setAttribute('width', String((PLOT_W + 4) * p));
       b.labZ.textContent = Math.round(b.d.zppo.g * p);
       b.labG.textContent = Math.round(b.d.grpo.g * p);
-      const ev = p > 0.94 ? 1 : 0;
+      const ev = (p > 0.94 ? 1 : 0) * opacity;
+      if (b.g) b.g.style.opacity = opacity;
+      b.labZ.style.opacity = opacity;
+      b.labG.style.opacity = opacity;
       b.dotZ.style.opacity = ev;
       b.dotG.style.opacity = ev;
     });
@@ -2298,30 +2385,52 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
 
   const REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   built.forEach((b) => { b.dotZ.style.opacity = 0; b.dotG.style.opacity = 0; });
-  if (REDUCE) { render(1); return; }
+  if (REDUCE) { setState(1, 1); return; }
 
-  const DRAW = 2300;
-  const easeOut = (t) => 1 - (1 - t) * (1 - t);
-  let raf = 0, t0 = null;
+  // Continuous auto-play loop: draw in → hold → fade out → repeat, forever.
+  // (No Replay button — the charts keep cycling on their own.) The loop pauses
+  // when scrolled off-screen and resumes when it comes back into view.
+  const DELAY_IN = 250;   // brief beat before each draw
+  const DRAW     = 2300;  // draw the curves in
+  const HOLD     = 1900;  // hold the finished state (long enough to read)
+  const FADE     = 550;   // fade out before restarting
+  const PERIOD   = DELAY_IN + DRAW + HOLD + FADE;
+  const easeOut  = (t) => 1 - (1 - t) * (1 - t);
+
+  let raf = 0, startTs = null, visible = false;
   function frame(ts) {
-    if (t0 == null) t0 = ts;
-    const p = Math.min(1, (ts - t0) / DRAW);
-    render(easeOut(p));
-    raf = p < 1 ? requestAnimationFrame(frame) : 0;
+    if (!visible) { raf = 0; return; }
+    if (startTs == null) startTs = ts;
+    const e = (ts - startTs) % PERIOD;
+    let p, op;
+    if (e < DELAY_IN) {
+      p = 0; op = 0;
+    } else if (e < DELAY_IN + DRAW) {
+      const t = (e - DELAY_IN) / DRAW;
+      p = easeOut(t); op = Math.min(1, (e - DELAY_IN) / 220);
+    } else if (e < DELAY_IN + DRAW + HOLD) {
+      p = 1; op = 1;
+    } else {
+      const t = (e - DELAY_IN - DRAW - HOLD) / FADE;
+      p = 1; op = Math.max(0, 1 - t);
+    }
+    setState(p, op);
+    raf = requestAnimationFrame(frame);
   }
-  function play() { cancelAnimationFrame(raf); t0 = null; render(0); raf = requestAnimationFrame(frame); }
+  function start() { if (!raf) { startTs = null; raf = requestAnimationFrame(frame); } }
 
-  let started = false;
+  setState(0, 0);
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting && !started) { started = true; play(); io.disconnect(); } });
-    }, { threshold: 0.3 });
+      entries.forEach((e) => {
+        if (e.isIntersecting) { visible = true; start(); }
+        else { visible = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+      });
+    }, { threshold: 0.2 });
     io.observe(root);
   } else {
-    play();
+    visible = true;
+    start();
   }
-
-  const replay = document.getElementById('gradReplay');
-  if (replay) replay.addEventListener('click', play);
 })();
 
