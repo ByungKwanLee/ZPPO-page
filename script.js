@@ -1269,43 +1269,21 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
   // Dots
   dots.innerHTML = QUAL.map((_, i) => `<button class="qual__dot ${i===0?'is-active':''}" role="tab" aria-label="Go to example ${i+1}" data-i="${i}"></button>`).join('');
 
-  // Layout: stack slides absolutely so we can fade between them
+  // Slides live in one flex track that slides horizontally between examples.
   const slides = [...track.querySelectorAll('.qual__slide')];
-
-  function applyLayout(){
-    // Use position: relative on the active slide; absolute on others so the carousel sizes to active.
-    slides.forEach((s,i)=>{
-      if (i === idx) {
-        s.style.position = 'relative';
-        s.style.left = '0';
-        s.style.right = '0';
-        s.style.top = '0';
-        s.classList.add('is-active');
-      } else {
-        s.style.position = 'absolute';
-        s.style.left = '0';
-        s.style.right = '0';
-        s.style.top = '0';
-        s.style.pointerEvents = 'none';
-        s.classList.remove('is-active');
-      }
-    });
-    // Re-enable pointer for active
-    slides[idx].style.pointerEvents = 'auto';
-  }
 
   function go(i){
     idx = (i + slides.length) % slides.length;
-    applyLayout();
+    track.style.transform = `translateX(${-idx * 100}%)`;
+    slides.forEach((s, k) => {
+      const active = k === idx;
+      s.classList.toggle('is-active', active);
+      s.style.pointerEvents = active ? 'auto' : 'none';   // only the visible slide is interactive
+    });
     dots.querySelectorAll('.qual__dot').forEach((d, k) => d.classList.toggle('is-active', k===idx));
   }
 
-  // Make the track relative-positioned so absolute slides stack inside it.
-  track.style.position = 'relative';
-  track.style.minHeight = '480px';
-  track.style.overflow = 'visible';
-  track.style.scrollSnapType = 'none';
-  applyLayout();
+  go(0);
 
   prev?.addEventListener('click', () => go(idx-1));
   next?.addEventListener('click', () => go(idx+1));
@@ -1594,17 +1572,24 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
     dh.querySelectorAll('.dh__card').forEach((c) => c.classList.add('is-built'));
   }
 
+  // Release the pinned height so the box grows to its natural size and never
+  // clips its content (notably on mobile, where the diagram is much taller).
+  function openSolution() { if (solution) solution.classList.add('is-open'); }
+
   function revealSolution(animate) {
     if (!solution) return;
     const dh = solution.querySelector('.dh');
     const H = measureSolutionHeight();          // measure full content first
     if (H) solution.style.setProperty('--sol-h', H + 'px'); // pin the fixed height
     if (animate && dh) {
-      // After the diagram builds, the Effect section types out, then we're done.
       buildDiagram(dh, () => revealEffect(true, () => { done = true; hideSkip(); }));
+      // Once the open animation (height 0 → --sol-h) has played, drop the pin to a
+      // natural height so the diagram is never clipped while it types in. The
+      // pieces reserve their layout (opacity-only hiding), so this causes no jump.
+      seqTimers.push(setTimeout(openSolution, 620));
     }
     solution.classList.add('is-shown');         // expand the box (pieces hidden if animating)
-    if (!animate) { finalizeDiagram(); revealEffect(false); }   // static: show everything
+    if (!animate) { finalizeDiagram(); openSolution(); revealEffect(false); }   // static: show everything
   }
 
   const inspiration = document.getElementById('rqInspiration');

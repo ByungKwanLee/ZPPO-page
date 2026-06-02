@@ -3208,6 +3208,13 @@ html[data-theme="light"] .rq__quote .rq__punch-note { color: var(--neg); font-we
   opacity: 1;
   margin-top: clamp(22px, 3vw, 34px);
 }
+/* Once the diagram has finished building, release the pinned height so content
+   is never clipped — important on mobile, where the BCQ/NCQ branches stack and
+   the box grows much taller than the measured single-row desktop height. */
+.rq__solution.is-open {
+  height: auto;
+  overflow: visible;
+}
 .rq__solution-inner {
   display: flex;
   flex-direction: column;
@@ -4947,26 +4954,28 @@ html[data-theme="dark"] .results tbody tr:nth-child(even) td.col-method { backgr
   border: 1px solid var(--line);
   padding: 14px 14px 24px;
   outline: none;
+  overflow: hidden;                 /* clip the off-screen slides of the track */
 }
 .qual:focus-visible { box-shadow: 0 0 0 2px var(--nv); }
+/* The slides sit side-by-side in one flex track that translates horizontally,
+   so swiping/clicking glides between examples instead of cutting. */
 .qual__track {
   display: flex;
-  overflow: hidden;
-  scroll-snap-type: x mandatory;
-  position: relative;
+  align-items: flex-start;
+  transition: transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 .qual__slide {
   flex: 0 0 100%;
-  scroll-snap-align: start;
   display: grid;
   grid-template-columns: minmax(220px, 1fr) 1.4fr;
   gap: 22px;
   padding: 12px;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 320ms var(--ease), transform 320ms var(--ease);
+  align-items: start;
 }
-.qual__slide.is-active { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .qual__track { transition: none; }
+}
 .qual__media {
   background: var(--surface-2);
   border-radius: var(--radius);
