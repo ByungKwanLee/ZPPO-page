@@ -3766,7 +3766,8 @@ html[data-theme="light"] .dh__qpill { color: var(--nv); }
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 9px;
+  /* No flex gap: the label is typed in, and the typewriter caret is appended as
+     a sibling flex item — a gap here would push the caret away from the text. */
   font-size: clamp(14px, 1.3vw, 16px);
   font-weight: 800;
   letter-spacing: 0.01em;

@@ -363,9 +363,7 @@
       </div>
     </div>
 
-    <!-- Static teaser bar chart removed — the interactive TL;DR panel below
-         (Train button + per-size deltas) covers the same numbers and lets
-         readers explore every size instead of looking at a frozen figure. -->
+    
 
   </div>
 </section>
@@ -513,38 +511,7 @@
     </p>
   </div>
 
-  <!-- Problem / Solution — temporarily hidden
-  <div class="ps">
-    <div class="ps__card ps__card--problem">
-      <header><span class="ps__tag">Problem</span></header>
-      <p>
-        Distillation forces a small student to imitate a giant teacher's logits—it <strong>memorizes</strong> sharp modes and <strong>degrades</strong> generalization beyond the training corpus.
-        GRPO avoids logits, but on hard questions every rollout fails, the advantage is <strong>zero</strong>, and the question is silently <strong>discarded</strong>.
-      </p>
-    </div>
-
-    <div class="ps__arrow" aria-hidden="true">
-      <svg viewBox="0 0 80 30" width="100%" height="30">
-        <defs>
-          <linearGradient id="arrowGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#76B900" stop-opacity="0.2"/>
-            <stop offset="100%" stop-color="#76B900" stop-opacity="1"/>
-          </linearGradient>
-        </defs>
-        <path d="M2 15 L70 15 M62 8 L72 15 L62 22" fill="none" stroke="url(#arrowGrad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-
-    <div class="ps__card ps__card--solution">
-      <header><span class="ps__tag ps__tag--good">Solution</span></header>
-      <p>
-        ZPPO keeps the teacher inside the <strong class="hl-good">prompt</strong>, never the gradient.
-        On hard questions, <strong>BCQ</strong> shows the student one correct teacher trace vs. one of its own wrong traces (anonymized, shuffled); <strong>NCQ</strong> shows the student all of its wrong attempts at once.
-        A <strong>prompt replay buffer</strong> keeps re-exposing each hard question until the student <em>graduates</em>—a literal zone of proximal development.
-      </p>
-    </div>
-  </div>
-  -->
+  
 
 
   <!-- Problem / Research Question / Solution — three short cards that give
@@ -802,16 +769,7 @@
   </section>
 </div>
 
-<!-- Solution is now fully detailed by the Method section below; the one-line
-     teaser card is kept here (commented out) in case it's wanted again.
-  <div class="prs__card prs__card--solution">
-    <header class="prs__head">
-      <span class="prs__dot" aria-hidden="true"></span>
-      <span class="prs__tag">Solution</span>
-    </header>
-    <p>Keep the teacher response inside the <strong class="hl-good">prompt</strong>, never the gradient, avoiding policy drift.</p>
-  </div>
--->
+
 
 <!-- ====== Method ====== -->
 <section class="section" id="method">
@@ -849,242 +807,7 @@
     </figcaption>
   </figure>
 
-  <!-- Method body hidden for step-by-step redesign — unwrap this <template> to restore. -->
-  <template>
-  <figure class="figure figure--wide">
-    <img src="assets/figures/figure_high_concept.png" alt="High concept: two RL failure modes and how BCQ/NCQ fix them." loading="lazy"/>
-    <figcaption>
-      <strong>(a)</strong> Two failure modes that motivate ZPPO: small students fit a giant teacher's logits brittlely; injecting a teacher response into the policy gradient breaks on-policy.
-      <strong>(b)</strong> <span class="hl-good-text">BCQ</span> pairs a correct teacher response with a wrong student response as anonymized in-prompt candidates.
-      <strong>(c)</strong> <span class="hl-good-text">NCQ</span> aggregates the student's own wrong rollouts into a single prompt.
-    </figcaption>
-  </figure>
-
-  <figure class="figure figure--wide">
-    <!-- Animated overview of ZPPO. Pure-CSS keyframes drive a single 12s
-         cycle that walks through: (a) hard-question sampling & admission to
-         the replay buffer, (b) BCQ slot formation, (c) NCQ accumulation. -->
-    <div class="zppo-anim" role="img"
-         aria-label="ZPPO method animation: a hard question is sampled, the teacher emits one correct rollout while the student emits one correct and seven wrong rollouts, the question is admitted to the replay buffer, and is reformulated into a BCQ prompt (one teacher-correct + one student-wrong, anonymized) and an NCQ prompt (all student-wrong, no teacher).">
-      <svg class="zppo-anim__svg" viewBox="0 0 1200 460" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-        <defs>
-          <marker id="zppoArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
-          </marker>
-          <marker id="zppoArrowPurple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#a780ff"/>
-          </marker>
-        </defs>
-
-        <!-- Panel labels -->
-        <text class="zppo-anim__panel-lbl" x="20"   y="28">(a) Sample &amp; rollouts → admit</text>
-        <text class="zppo-anim__panel-lbl" x="540"  y="28">(b) BCQ</text>
-        <text class="zppo-anim__panel-lbl" x="860"  y="28">(c) NCQ</text>
-
-        <!-- Vertical dividers between panels -->
-        <line class="zppo-anim__divider" x1="520" y1="44" x2="520" y2="436"/>
-        <line class="zppo-anim__divider" x1="840" y1="44" x2="840" y2="436"/>
-
-        <!-- ====== Panel (a) ====== -->
-
-        <!-- Database cylinder (green-ish) -->
-        <g class="zppo-anim__db">
-          <ellipse cx="60" cy="115" rx="34" ry="9"/>
-          <path d="M 26 115 L 26 165 A 34 9 0 0 0 94 165 L 94 115" fill="none"/>
-          <ellipse cx="60" cy="115" rx="34" ry="9" class="zppo-anim__cyl-top"/>
-          <text x="60" y="190" text-anchor="middle">Database</text>
-        </g>
-
-        <!-- Replay Buffer cylinder (purple) -->
-        <g class="zppo-anim__buf">
-          <ellipse cx="60" cy="255" rx="34" ry="9"/>
-          <path d="M 26 255 L 26 305 A 34 9 0 0 0 94 305 L 94 255" fill="none"/>
-          <ellipse cx="60" cy="255" rx="34" ry="9" class="zppo-anim__cyl-top"/>
-          <text x="60" y="330" text-anchor="middle">Replay Buffer</text>
-        </g>
-
-        <!-- Arrows from cylinders into Batch -->
-        <path class="zppo-anim__feed-arrow zppo-anim__feed-arrow--new" d="M 100 140 L 160 175" marker-end="url(#zppoArrow)"/>
-        <path class="zppo-anim__feed-arrow zppo-anim__feed-arrow--replay" d="M 100 270 L 160 245" marker-end="url(#zppoArrow)"/>
-
-        <!-- Batch container -->
-        <g class="zppo-anim__batch">
-          <rect x="160" y="105" width="180" height="200" rx="12"/>
-          <text x="250" y="128" text-anchor="middle" class="zppo-anim__batch-lbl">Batch</text>
-          <rect x="175" y="148" width="150" height="60" rx="8" class="zppo-anim__newq-bg"/>
-          <text x="250" y="183" text-anchor="middle" class="zppo-anim__newq-lbl">New Questions</text>
-          <rect x="175" y="218" width="150" height="60" rx="8" class="zppo-anim__replayq-bg"/>
-          <text x="250" y="253" text-anchor="middle" class="zppo-anim__replayq-lbl">Replayed Questions</text>
-        </g>
-
-        <!-- Card 1: drops from Database into "New Questions".
-             Position is driven by CSS keyframes (translate origin = SVG 0,0). -->
-        <g class="zppo-anim__card zppo-anim__card--new">
-          <rect width="40" height="20" rx="4"/>
-          <text x="20" y="14" text-anchor="middle">Q₁</text>
-        </g>
-        <!-- Card 2: drops from Replay Buffer into "Replayed Questions". -->
-        <g class="zppo-anim__card zppo-anim__card--replay">
-          <rect width="40" height="20" rx="4"/>
-          <text x="20" y="14" text-anchor="middle">Q*</text>
-        </g>
-
-        <!-- Sample arrow + label -->
-        <g class="zppo-anim__sample">
-          <path d="M 345 240 L 410 205" marker-end="url(#zppoArrow)"/>
-          <text x="377" y="220" text-anchor="middle">Sample</text>
-        </g>
-
-        <!-- Sampled question card (moves from Batch → Teacher/Student).
-             Position driven entirely by CSS keyframes. -->
-        <g class="zppo-anim__sample-card">
-          <rect width="40" height="20" rx="4"/>
-          <text x="20" y="14" text-anchor="middle">Q*</text>
-        </g>
-
-        <!-- Branch arrows: sampled question → Teacher (up) and Student (down) -->
-        <path class="zppo-anim__branch zppo-anim__branch--teacher" d="M 410 195 L 405 120" marker-end="url(#zppoArrow)"/>
-        <path class="zppo-anim__branch zppo-anim__branch--student" d="M 410 215 L 405 290" marker-end="url(#zppoArrow)"/>
-
-        <!-- Teacher box -->
-        <g class="zppo-anim__teacher">
-          <rect x="405" y="95" width="80" height="42" rx="9"/>
-          <text x="445" y="121" text-anchor="middle">Teacher</text>
-        </g>
-        <!-- Student box -->
-        <g class="zppo-anim__student">
-          <rect x="405" y="270" width="80" height="42" rx="9"/>
-          <text x="445" y="296" text-anchor="middle">Student</text>
-        </g>
-
-        <!-- Teacher rollout: 1 ✓ -->
-        <g class="zppo-anim__t-roll">
-          <circle cx="497" cy="80" r="11"/>
-          <text x="497" y="84" text-anchor="middle">✓</text>
-        </g>
-
-        <!-- Student rollouts: 8 chips arranged in 2 rows × 4 cols  -->
-        <!-- Row 1 (y=340), Row 2 (y=365). Columns at x = 415, 437, 459, 481.
-             Order chosen so the single ✓ falls in slot #5 (idx 4). -->
-        <g class="zppo-anim__s-roll" style="--i:0"><circle cx="415" cy="340" r="9"/><text x="415" y="344" text-anchor="middle">✗</text></g>
-        <g class="zppo-anim__s-roll" style="--i:1"><circle cx="437" cy="340" r="9"/><text x="437" y="344" text-anchor="middle">✗</text></g>
-        <g class="zppo-anim__s-roll" style="--i:2"><circle cx="459" cy="340" r="9"/><text x="459" y="344" text-anchor="middle">✗</text></g>
-        <g class="zppo-anim__s-roll" style="--i:3"><circle cx="481" cy="340" r="9"/><text x="481" y="344" text-anchor="middle">✗</text></g>
-        <g class="zppo-anim__s-roll zppo-anim__s-roll--ok" style="--i:4"><circle cx="415" cy="365" r="9"/><text x="415" y="369" text-anchor="middle">✓</text></g>
-        <g class="zppo-anim__s-roll" style="--i:5"><circle cx="437" cy="365" r="9"/><text x="437" y="369" text-anchor="middle">✗</text></g>
-        <g class="zppo-anim__s-roll" style="--i:6"><circle cx="459" cy="365" r="9"/><text x="459" y="369" text-anchor="middle">✗</text></g>
-        <g class="zppo-anim__s-roll" style="--i:7"><circle cx="481" cy="365" r="9"/><text x="481" y="369" text-anchor="middle">✗</text></g>
-
-        <!-- Judgment pill: "1 ✓  <  7 ✗  →  admit" -->
-        <g class="zppo-anim__judge">
-          <rect x="180" y="395" width="320" height="32" rx="16"/>
-          <text x="340" y="416" text-anchor="middle"># correct &lt; # wrong  →  <tspan class="zppo-anim__judge-result">admit</tspan></text>
-        </g>
-
-        <!-- Admission arrow: curves from judgment pill back to Replay Buffer -->
-        <path class="zppo-anim__admit-arrow" d="M 200 410 Q 60 410 60 305" marker-end="url(#zppoArrowPurple)"/>
-
-        <!-- ====== Panel (b): BCQ ====== -->
-
-        <text class="zppo-anim__prompt-q"     x="540" y="80">Question: Q*</text>
-        <text class="zppo-anim__prompt-instr" x="540" y="105">Here are two candidate responses.</text>
-        <text class="zppo-anim__prompt-instr" x="540" y="123">One is correct, one is wrong (anonymized).</text>
-
-        <!-- Candidate slot 1 -->
-        <g class="zppo-anim__bcq-slot zppo-anim__bcq-slot--1">
-          <rect x="540" y="145" width="280" height="56" rx="8"/>
-          <text class="zppo-anim__cand-tag" x="552" y="163">&lt;candidate&gt;</text>
-          <text class="zppo-anim__cand-tag" x="552" y="196">&lt;/candidate&gt;</text>
-          <g class="zppo-anim__bcq-fill zppo-anim__bcq-fill--teacher">
-            <rect x="556" y="170" width="248" height="20" rx="4"/>
-            <text x="680" y="184" text-anchor="middle">Teacher correct response</text>
-          </g>
-        </g>
-
-        <!-- Candidate slot 2 -->
-        <g class="zppo-anim__bcq-slot zppo-anim__bcq-slot--2">
-          <rect x="540" y="220" width="280" height="56" rx="8"/>
-          <text class="zppo-anim__cand-tag" x="552" y="238">&lt;candidate&gt;</text>
-          <text class="zppo-anim__cand-tag" x="552" y="271">&lt;/candidate&gt;</text>
-          <g class="zppo-anim__bcq-fill zppo-anim__bcq-fill--student">
-            <rect x="556" y="245" width="248" height="20" rx="4"/>
-            <text x="680" y="259" text-anchor="middle">Student wrong response</text>
-          </g>
-        </g>
-
-        <text class="zppo-anim__assistant" x="540" y="310">Assistant:</text>
-        <rect class="zppo-anim__cursor" x="612" y="298" width="2" height="15"/>
-
-        <!-- ====== Panel (c): NCQ ====== -->
-
-        <text class="zppo-anim__prompt-q"     x="860" y="80">Question: Q*</text>
-        <text class="zppo-anim__prompt-instr" x="860" y="105">All listed answers are WRONG.</text>
-        <text class="zppo-anim__prompt-instr" x="860" y="123">Avoid them; produce a correct answer.</text>
-
-        <!-- Stack of student-wrong candidates -->
-        <g class="zppo-anim__ncq-slot" style="--i:0">
-          <rect x="860" y="145" width="320" height="42" rx="8"/>
-          <text class="zppo-anim__cand-tag" x="872" y="160">&lt;candidate&gt;</text>
-          <text x="1020" y="178" text-anchor="middle">Wrong response · \boxed{X₁}</text>
-        </g>
-        <g class="zppo-anim__ncq-slot" style="--i:1">
-          <rect x="860" y="197" width="320" height="42" rx="8"/>
-          <text class="zppo-anim__cand-tag" x="872" y="212">&lt;candidate&gt;</text>
-          <text x="1020" y="230" text-anchor="middle">Wrong response · \boxed{X₂}</text>
-        </g>
-        <g class="zppo-anim__ncq-slot" style="--i:2">
-          <rect x="860" y="249" width="320" height="42" rx="8"/>
-          <text class="zppo-anim__cand-tag" x="872" y="264">&lt;candidate&gt;</text>
-          <text x="1020" y="282" text-anchor="middle">Wrong response · \boxed{X₃}</text>
-        </g>
-        <text class="zppo-anim__ncq-more" x="1180" y="307" text-anchor="end">… +4 more</text>
-
-        <!-- "ALL WRONG" stamp. Rotation + scale entirely from CSS keyframes
-             so the bounce-in transform stack is unified in one place. -->
-        <g class="zppo-anim__ncq-stamp">
-          <rect x="935" y="200" width="170" height="40" rx="6"/>
-          <text x="1020" y="227" text-anchor="middle">ALL WRONG</text>
-        </g>
-
-        <text class="zppo-anim__assistant" x="860" y="340">Assistant:</text>
-        <rect class="zppo-anim__cursor zppo-anim__cursor--ncq" x="930" y="328" width="2" height="15"/>
-
-      </svg>
-    </div>
-    <figcaption>
-      <strong>Overview of ZPPO.</strong>
-      (a)&nbsp;Hard questions (<span class="math">r̄<sub>x</sub> &lt; 0.5</span>) are admitted to the prompt replay buffer.
-      (b)&nbsp;BCQ pairs one correct teacher response with one wrong student response (anonymized + shuffled).
-      (c)&nbsp;NCQ aggregates the student's own wrong rollouts into a single prompt with an "all wrong" instruction.
-      Every token whose gradient flows back to the student is <em>still student-generated</em>.
-    </figcaption>
-  </figure>
-
-  <!-- Component pills -->
-  <div class="pills">
-    <div class="pill pill--bcq">
-      <div class="pill__num">BCQ</div>
-      <div class="pill__body">
-        <strong>Binary Candidate Question.</strong>
-        Append <em>one teacher-correct</em> + <em>one student-wrong</em> trace, anonymized &amp; shuffled. Student rolls out again — every gradient-counted token is on-policy.
-      </div>
-    </div>
-    <div class="pill pill--ncq">
-      <div class="pill__num">NCQ</div>
-      <div class="pill__body">
-        <strong>Negative Candidate Question.</strong>
-        Append <em>all</em> the student's wrong rollouts at once, with the explicit instruction that none of them is correct.
-      </div>
-    </div>
-    <div class="pill pill--buf">
-      <div class="pill__num">B</div>
-      <div class="pill__body">
-        <strong>Prompt Replay Buffer.</strong>
-        Re-expose each hard question with fresh BCQ/NCQ candidates per visit, until the student <em>graduates</em> (<span class="math">r̄<sub>x</sub> ≥ 0.5</span>) or is FIFO-evicted.
-      </div>
-    </div>
-  </div>
-  </template>
+  
 </section>
 
 <!-- ====== Results (graduation dynamics) ====== -->
@@ -1108,99 +831,9 @@
   </div>
 </section>
 
-<!-- Highlight hidden for step-by-step redesign — unwrap this <template> to restore. -->
-<template>
-<!-- ====== Highlight ====== -->
-<section class="section" id="highlight">
-  <div class="section__head">
-    <span class="section__kicker">highlight</span>
-    <h2 class="section__title">Inside the <em>Zone</em>.</h2>
-    <p class="section__lede">
-      What ordinary RL discards as zero-gradient, ZPPO turns into the strongest learning signal.
-    </p>
-  </div>
 
-  <figure class="figure">
-    <img src="assets/figures/figure3.png" alt="Cumulative graduate counts for ZPPO vs GRPO+buffer at 2B, by entry rollout accuracy." loading="lazy"/>
-    <figcaption>
-      <strong>The graduation signal lives at the hardest entries.</strong>
-      Cumulative graduate counts (graduated/admitted) of ZPPO vs. GRPO + buffer at 2B by entry rollout accuracy at admission.
-      Where ordinary RL has <em>zero gradient signal</em>, ZPPO graduates <strong>28%</strong> vs. GRPO's <strong>4%</strong>.
-    </figcaption>
-  </figure>
 
-  <figure class="figure">
-    <img src="assets/figures/figure4.png" alt="Batch composition (Easy / BCQ / NCQ) and graduation-vs-eviction across scales." loading="lazy"/>
-    <figcaption>
-      <strong>BCQ thins, NCQ grows, the buffer rotates.</strong>
-      (a)&nbsp;Batch composition over a full run by scale.
-      (b)&nbsp;Cumulative graduation vs. FIFO-eviction. Small scales mostly evict before graduating; large scales graduate before eviction.
-    </figcaption>
-  </figure>
-</section>
-</template>
 
-<!-- Results hidden for step-by-step redesign — unwrap this <template> to restore. -->
-<template>
-<!-- ====== Results ====== -->
-<section class="section" id="results">
-  <div class="section__head">
-    <span class="section__kicker">results</span>
-    <h2 class="section__title">Main results across <em>31 benchmarks</em>.</h2>
-    <p class="section__lede">
-      Select a student scale and a benchmark family. <span class="legend-good">+</span> gains in NVIDIA green, <span class="legend-bad">−</span> drops in red, the <em>average</em> always emphasized.
-    </p>
-  </div>
-
-  <!-- Filter controls -->
-  <div class="results__controls">
-    <div class="ctrl">
-      <span class="ctrl__lbl">Student size</span>
-      <div class="seg" id="sizeSeg" role="tablist" aria-label="Student size">
-        <button class="seg__btn is-active" data-size="0.8B" role="tab" aria-selected="true">0.8B</button>
-        <button class="seg__btn" data-size="2B" role="tab" aria-selected="false">2B</button>
-        <button class="seg__btn" data-size="4B" role="tab" aria-selected="false">4B</button>
-        <button class="seg__btn" data-size="9B" role="tab" aria-selected="false">9B</button>
-      </div>
-    </div>
-    <div class="ctrl">
-      <span class="ctrl__lbl">Benchmark family</span>
-      <div class="seg" id="famSeg" role="tablist" aria-label="Benchmark family">
-        <button class="seg__btn is-active" data-fam="VLM" role="tab" aria-selected="true">16 VLM</button>
-        <button class="seg__btn" data-fam="LLM" role="tab" aria-selected="false">10 LLM</button>
-        <button class="seg__btn" data-fam="Video" role="tab" aria-selected="false">5 Video</button>
-        <button class="seg__btn" data-fam="ALL" role="tab" aria-selected="false">Avg of all 31</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="results__wrap">
-    <div class="results__scroll" role="region" aria-label="Results table (scroll horizontally on small screens)">
-      <table class="results" id="resultsTable">
-        <thead><tr id="resultsHead"></tr></thead>
-        <tbody id="resultsBody"></tbody>
-      </table>
-    </div>
-    <p class="results__note">
-      <span>† denotes augmentation with the prompt replay buffer.</span>
-      <span>Δ = ZPPO − strongest non-ZPPO method per column.</span>
-    </p>
-  </div>
-
-  <!-- Hint + Prefix comparison block (smaller, summarized) -->
-  <div class="hintprefix">
-    <h3 class="hintprefix__title">ZPPO vs. <em>Hint</em> and <em>Prefix</em> teacher injection</h3>
-    <div class="hintprefix__grid">
-      <div class="hp-card"><span class="hp-card__name">Base</span><span class="hp-card__val">41.0 · 56.8</span><span class="hp-card__cap">0.8B · 2B (VLM avg)</span></div>
-      <div class="hp-card"><span class="hp-card__name">+GRPO<sup>†</sup></span><span class="hp-card__val">45.4 · 59.2</span></div>
-      <div class="hp-card"><span class="hp-card__name">+Hint</span><span class="hp-card__val">47.2 · 60.4</span></div>
-      <div class="hp-card"><span class="hp-card__name">+Prefix</span><span class="hp-card__val">45.5 · 59.5</span></div>
-      <div class="hp-card hp-card--best"><span class="hp-card__name">+ZPPO</span><span class="hp-card__val"><strong>50.3 · 62.0</strong></span></div>
-    </div>
-    <p class="hintprefix__caption">BCQ alone already beats both Hint and Prefix; the full ZPPO recipe opens the widest gap.</p>
-  </div>
-</section>
-</template>
 
 <!-- ====== Qualitative ====== -->
 <section class="section" id="qualitative">

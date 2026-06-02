@@ -20,20 +20,23 @@ Then open <http://localhost:8765/>.
 ```
 index.html           Page structure + meta tags
 styles.css           Theme tokens, dark / light, responsive
-script.js            Theme toggle, results table, qualitative carousel
+script.js            Theme toggle, TL;DR panel, scroll animations, qualitative carousel
 assets/
-  nvidia-logo.svg    Navbar / footer logo (currentColor for wordmark)
-  og-thumbnail.png   PLACEHOLDER — replace with your custom thumbnail (1200×630)
-  og-placeholder.svg (alternative SVG version of the placeholder)
-  figures/           PNG figures converted from the paper PDFs
-  qualitative/       Qualitative example images (banana, coat, books, straws, ...)
+  og-thumbnail.png   Social / link-preview thumbnail
+  byungkwan.jpg      "Through Our Lens" author photo
+  vygotsky.jpg       Inspiration (ZPD) author photo
+  figures/           Method figure (figure2.png)
+  qualitative/       Qualitative example images (straws, banana, coat, books, airplane)
 ```
+
+The NVIDIA logos are inlined as `<svg>` in `index.html` (no logo image files needed).
 
 ### Replacing the thumbnail
 
-`assets/og-thumbnail.png` is a placeholder. Replace the file in-place (keep
-the same name) and the link preview on KakaoTalk / Teams / Slack / Twitter will
-pick it up automatically — no other edits needed. Target size: **1200×630 px**.
+Replace `assets/og-thumbnail.png` in-place (keep the same name) and the link
+preview on KakaoTalk / Teams / Slack / Twitter will pick it up automatically.
+If the dimensions change, update `og:image:width` / `og:image:height` in
+`index.html` to match.
 
 ## Deployment
 
@@ -48,12 +51,12 @@ The page is fully static. Drop the whole folder on any host:
 - Toggle in the top-right of the navbar.
 - Choice is persisted in `localStorage` as `zppo-theme`.
 
-## Customizing the results table
+## Editing the numbers
 
-The headline tables live as plain JS objects in `script.js`:
+The accuracy tables live as a plain JS object in `script.js`:
 - `DATA.VLM`, `DATA.LLM`, `DATA.Video` (× `0.8B / 2B / 4B / 9B`).
-- `COLS.VLM / .LLM / .Video` set the column order.
-Edit those constants if any number changes; the UI re-renders automatically.
+
+These drive the TL;DR "Accuracy Gain (Δ pp)" panel.
 
 ## Qualitative carousel
 
