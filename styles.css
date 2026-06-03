@@ -3887,6 +3887,15 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
 @media (max-width: 640px) {
   .rq__box { padding-left: 18px; padding-right: 18px; }
 
+  /* The decorative quote marks are pinned to ~88px on phones, which crowds the
+     centered RESEARCH QUESTION badge in the now-narrow box and makes the badge
+     read as off-center. Shrink them so they tuck into the corners, clear of the
+     badge. */
+  .rq__box--quote::before,
+  .rq__box--quote::after { font-size: clamp(46px, 13vw, 70px); }
+  .rq__box--quote::before { left: 12px; }
+  .rq__box--quote::after  { right: 12px; }
+
   .zpd__legend .zpd-hl,
   .zpd__legend--rl .rl-zppo,
   .zpd__intro strong { white-space: normal; }
