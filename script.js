@@ -815,6 +815,15 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
   // Slides live in one flex track that slides horizontally between examples.
   const slides = [...track.querySelectorAll('.qual__slide')];
 
+  // Keep the track only as tall as the *current* slide (the slides stack and
+  // vary a lot in height on mobile, so a fixed "tallest slide" height leaves a
+  // big empty band under short examples). The off-screen slides keep their own
+  // height but are clipped by the carousel's overflow:hidden.
+  function syncHeight(){
+    const active = slides[idx];
+    if (active) track.style.height = active.getBoundingClientRect().height + 'px';
+  }
+
   function go(i){
     idx = (i + slides.length) % slides.length;
     track.style.transform = `translateX(${-idx * 100}%)`;
@@ -824,9 +833,24 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
       s.style.pointerEvents = active ? 'auto' : 'none';   // only the visible slide is interactive
     });
     dots.querySelectorAll('.qual__dot').forEach((d, k) => d.classList.toggle('is-active', k===idx));
+    syncHeight();
   }
 
   go(0);
+
+  // Recompute the height once images load (they change a slide's height) and on
+  // resize / font load, so the carousel never clips or leaves a gap.
+  window.addEventListener('load', syncHeight);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncHeight);
+  track.querySelectorAll('img').forEach(img => {
+    img.addEventListener('load', syncHeight);
+    img.addEventListener('error', syncHeight);
+  });
+  let qualResizeT;
+  window.addEventListener('resize', () => {
+    clearTimeout(qualResizeT);
+    qualResizeT = setTimeout(syncHeight, 120);
+  }, { passive: true });
 
   prev?.addEventListener('click', () => go(idx-1));
   next?.addEventListener('click', () => go(idx+1));

@@ -190,7 +190,9 @@ html[data-theme="light"] .icon-moon { display: block; }
   box-shadow: 0 0 10px var(--nv-glow);
   transition: height 80ms linear;
 }
-@media (max-width: 640px) { .scroll-rail { width: 3px; } }
+/* The fixed progress rail overlays the right edge of cards on phones; hide it
+   on mobile (native scrolling is enough there). */
+@media (max-width: 640px) { .scroll-rail { display: none; } }
 @media (prefers-reduced-motion: reduce) { .scroll-rail__fill { transition: none; } }
 
 /* ---------- Hero ---------- */
@@ -3237,10 +3239,11 @@ html[data-theme="light"] .prs__tap { color: #c3243a; }
   .prs__tap::after { display: none; }
 }
 /* On narrow screens let the invite drop below the PROBLEM tag instead of
-   overflowing the header bar. */
-@media (max-width: 560px) {
+   overflowing the header bar. The right group must be allowed to shrink and
+   wrap (it was flex-shrink:0), otherwise the caret pokes out past the box. */
+@media (max-width: 768px) {
   .prs__head--toggle { flex-wrap: wrap; }
-  .prs__head-right { margin-left: 0; }
+  .prs__head-right { margin-left: 0; flex-shrink: 1; min-width: 0; flex-wrap: wrap; }
   .prs__head-hint { white-space: normal; }
 }
 .prs__head--toggle:focus { outline: none; }
@@ -3434,7 +3437,9 @@ html[data-theme="light"] .takeaway__hint kbd { background: rgba(0, 0, 0, 0.04); 
 }
 html[data-theme="light"] .takeaway__dot.is-active { background: #c3243a; }
 @media (prefers-reduced-motion: reduce) {
-  .takeaway__track { transition: none; }
+  /* The slide transform stays animated even under reduce-motion: it's a small,
+     user-initiated horizontal glide (not autoplay/parallax), and without it the
+     carousel jumps abruptly between problems. Only the reveal grow is dropped. */
   .takeaway__reveal { transition: none; }
 }
 
@@ -3520,7 +3525,10 @@ html[data-theme="light"] .prs__card--problem  .prs__head { color: #c3243a; }
 .qual__track {
   display: flex;
   align-items: flex-start;
-  transition: transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* height is driven by JS to the *current* slide so short examples don't leave
+     a large empty band; both transform and height glide. */
+  transition: transform 420ms cubic-bezier(0.4, 0, 0.2, 1),
+              height 420ms cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
 }
 .qual__slide {
@@ -3530,9 +3538,6 @@ html[data-theme="light"] .prs__card--problem  .prs__head { color: #c3243a; }
   gap: 22px;
   padding: 12px;
   align-items: start;
-}
-@media (prefers-reduced-motion: reduce) {
-  .qual__track { transition: none; }
 }
 .qual__media {
   background: var(--surface-2);
