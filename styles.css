@@ -4070,6 +4070,14 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
     scroll-behavior: auto !important;
   }
 }
+/* Exception: the carousels are navigated by the user (arrows / dots / swipe),
+   so keep their horizontal slide animated even under reduce-motion. The global
+   reset above zeroes every transition; a class selector (higher specificity)
+   restores the duration for just these two tracks. */
+@media (prefers-reduced-motion: reduce) {
+  .qual__track { transition-duration: 420ms !important; }
+  .takeaway__track { transition-duration: 380ms !important; }
+}
 
 /* ---------- Print ---------- */
 @media print {
