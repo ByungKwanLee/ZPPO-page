@@ -3907,6 +3907,15 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
 
   .dh__label { width: 100%; }
   .dh__label-t { min-width: 0; overflow-wrap: break-word; text-align: center; }
+
+  /* Keep the BCQ/NCQ cards from exceeding the box: let the (single) grid column
+     shrink, make the candidate boxes fill the card width, and wrap their text —
+     the nowrap placeholders were forcing the card wider than the box. */
+  .dh__grid { grid-template-columns: minmax(0, 1fr); }
+  .dh__card--bcq .dh__cands,
+  .dh__card--ncq .dh__cands { grid-template-columns: minmax(0, 1fr); }
+  .dh__cand { min-width: 0; }
+  .dh__cand-ph { white-space: normal; overflow-wrap: anywhere; }
 }
 
 /* Very narrow phones: tighten the badge tracking so even the longest labels
