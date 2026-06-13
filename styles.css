@@ -2189,7 +2189,7 @@ html[data-theme="light"] .rq__box {
   position: absolute;
   z-index: 0;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(88px, 12vw, 168px);
+  font-size: clamp(76px, 9.5vw, 132px);
   line-height: 1;
   color: rgba(255, 255, 255, 0.92);
   opacity: 1;
@@ -2339,6 +2339,10 @@ html[data-theme="light"] .rq__quote strong.rq__hard { color: var(--neg); }
    crisp, quotable takeaway. */
 .rq__quote .rq__punch {
   display: block;
+  /* shrink the box to its text so its background doesn't cover the decorative
+     closing quotation mark in the bottom-right corner. */
+  width: fit-content;
+  max-width: 100%;
   margin-top: clamp(16px, 2vw, 24px);
   padding: 12px 16px;
   border-radius: 10px;
