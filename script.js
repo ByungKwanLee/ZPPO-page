@@ -925,14 +925,16 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
   const wait = (fn, ms) => { const t = setTimeout(fn, ms); seqTimers.push(t); return t; };
 
   const CARET = '<span class="rq__caret" aria-hidden="true"></span>';
-  const CLAUSE_PAUSE = 1400; // deliberate beat between clauses (<b class="rqp">)
+  const CLAUSE_PAUSE = 900; // deliberate beat between clauses (<b class="rqp">)
 
   // Reusable typewriter: types `full` HTML into `el` char-by-char (tags/entities
   // applied instantly; <b class="rqp"> markers add a long pause). Calls onDone().
   function typeInto(el, full, opts, onDone) {
     opts = opts || {};
-    const base   = opts.base   != null ? opts.base   : 60;
-    const jitter = opts.jitter != null ? opts.jitter : 45;
+    // Global speed-up factor: smaller = faster typing across every caller.
+    const SPEED = 0.65;
+    const base   = (opts.base   != null ? opts.base   : 60) * SPEED;
+    const jitter = (opts.jitter != null ? opts.jitter : 45) * SPEED;
     const tokens = full.match(/<\/?[^>]+>|&[a-zA-Z0-9#]+;|[\s\S]/g) || [];
     el.classList.add('is-typing');
     let i = 0, out = '';
@@ -955,9 +957,9 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
         return;
       }
       let delay;
-      if (t === '?' || t === '.') delay = opts.quick ? 150 : 360;
-      else if (/[,;:]/.test(t))   delay = opts.quick ? 100 : 230;
-      else if (/\s/.test(t) || t.charAt(0) === '&') delay = opts.quick ? 24 : 50;
+      if (t === '?' || t === '.') delay = opts.quick ? 100 : 230;
+      else if (/[,;:]/.test(t))   delay = opts.quick ? 65 : 150;
+      else if (/\s/.test(t) || t.charAt(0) === '&') delay = opts.quick ? 16 : 34;
       else {
         delay = base + Math.random() * jitter;
         // Human keyboard rhythm: quick bursts of keystrokes punctuated by the
@@ -965,8 +967,8 @@ All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The
         // rather than a fixed metronome.
         if (opts.human) {
           const r = Math.random();
-          if (r < 0.10) delay += 140 + Math.random() * 260;   // occasional think-pause
-          else if (r < 0.48) delay *= 0.4;                     // fast burst
+          if (r < 0.08) delay += 90 + Math.random() * 170;    // occasional think-pause
+          else if (r < 0.50) delay *= 0.4;                     // fast burst
         }
       }
       timer = setTimeout(step, delay);
