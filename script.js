@@ -134,19 +134,26 @@
   let currentSize = '0.8B';
 
   // Paper-canonical Δ values that override the per-cell average computation.
-  // Re-averaging 1-dp DATA arrays produces small cumulative rounding drift
-  // versus the paper's reported deltas (e.g. ZPPO VLM @ 0.8B computes to 9.24
-  // → rounds to 9.2, but the paper reports +9.3). Hardcode the figure values
-  // here so what the user sees matches the manuscript exactly.
+  // The manuscript reports a 1-dp Avg column per row and reads Δ off *those*
+  // rounded averages, whereas re-averaging the 1-dp DATA arrays here keeps full
+  // precision — the two disagree by 0.1 on any row where the residuals happen to
+  // straddle a rounding boundary. Hardcode the manuscript's values so the page
+  // matches it exactly.
+  //
+  // Δ = (paper Avg for the row) − (paper Avg for the base row), both 1-dp:
+  //   0.8B base Avg — LLM 25.2 · VLM 41.0 · Video 48.3
+  //   2B   base Avg — LLM 45.3 · VLM 56.8 · Video 60.6
+  // Sources: Tab. 1 (VLM 0.8B/2B), Tab. 2 (LLM + Video), Tab. `hintprefix`
+  // (the GRPO†+Teacher-response row, listed there as GRPO†+Prefix).
   const DELTA_OVERRIDES = {
     '0.8B': {
-      VLM:   { off:  0.5, on:  1.3, grpo:  4.4, prefix:  4.5, zppo:  9.3 },
+      VLM:   { off:  0.5, on:  1.3, grpo:  4.5, prefix:  4.5, zppo:  9.3 },
       LLM:   { off: -2.7, on: -2.0, grpo:  3.5, prefix:  1.9, zppo:  7.9 },
-      Video: { off: -3.3, on: -2.5, grpo:  2.2, prefix:  0.8, zppo:  4.5 },
+      Video: { off: -3.3, on: -2.5, grpo:  2.2, prefix:  0.8, zppo:  4.6 },
     },
     '2B': {
       VLM:   { off:  0.5, on:  1.2, grpo:  2.4, prefix:  2.7, zppo:  5.2 },
-      LLM:   { off: -2.2, on: -1.6, grpo:  2.0, prefix:  1.0, zppo:  5.1 },
+      LLM:   { off: -2.2, on: -1.5, grpo:  2.1, prefix:  1.0, zppo:  5.1 },
       Video: { off: -2.0, on: -1.4, grpo:  1.3, prefix:  0.4, zppo:  2.6 },
     },
   };
@@ -607,32 +614,6 @@ const DATA = {
 
 const QUAL = [
   {
-    id: 'straws',
-    scale: '0.8B',
-    domain: 'Visual Counting  ·  BCQ ✓ / NCQ ✗',
-    img: 'assets/qualitative/straws_0.png',
-    question: 'How many straws are in the photo?',
-    ref: '3',
-    studentWrong: 'Plain rollouts: 0 / 8 correct (all answer 0 — “no straws in the meal scene”)',
-    bcq: {
-      verdict: 'ok',
-      text: `<think>
-Candidate A performs a global "no straws in the meal scene" sweep without naming a location, while Candidate B commits to a specific region (the right edge of the frame), a specific shape (cylindrical), a specific colour (white), and a specific count of three. A positionally-grounded specific commitment is harder to fabricate than a blanket negative, so I commit to Candidate B on falsifiability, not the label. ... Answer: 3.
-</think>
-
-\\boxed{3}   ✓`
-    },
-    ncq: {
-      verdict: 'no',
-      text: `<think>
-All eight listed candidates conclude 0 with the same global "no straws in the scene" reasoning, and none describes a region or shape that the consensus might have missed. The prompt rules 0 out, but without a single localised cue in the listed traces I have no foothold for identifying where a missed cluster would be. I revert to the consensus. Answer: 0.
-</think>
-
-\\boxed{0}   ✗`
-    },
-    caption: 'A 0.8B student lacks the capacity to override its own consensus when every listed trace is a generic global negative; only the teacher-grounded BCQ branch, which contributes a positionally-specific anchor (right-edge cluster, cylindrical/white, count of three), recovers the count.'
-  },
-  {
     id: 'banana',
     scale: '2B',
     domain: 'Visual Counting',
@@ -643,7 +624,7 @@ All eight listed candidates conclude 0 with the same global "no straws in the sc
     bcq: {
       verdict: 'ok',
       text: `<think>
-The two candidates are anonymized, so I cannot tell which is teacher-correct from the label. Candidate A asserts a uniform "each of the three" without per-position evidence; Candidate B distinguishes the top and the bottom from the middle and the side. The per-position decomposition is concrete and falsifiable in a way a blanket "three" is not, so I commit to Candidate B on reasoning quality alone: top and bottom stickered, middle and side bare. ... Answer: 2.
+The two candidates disagree about the bunch before they disagree about the count. Candidate A treats it as three bananas and asserts a sticker on each; Candidate B enumerates four — top, middle, bottom, and one at the side — and puts stickers on only two of them. Going back to the image, the fourth banana Candidate B refers to is there, so Candidate A's premise is already wrong, and the per-position reading is the one I can check: top and bottom stickered, middle and side bare. ... Answer: 2.
 </think>
 
 \\boxed{2}   ✓`
@@ -651,38 +632,12 @@ The two candidates are anonymized, so I cannot tell which is teacher-correct fro
     ncq: {
       verdict: 'ok',
       text: `<think>
-All eight listed candidates report 3 with the same generic "each banana has a sticker" justification; none localises which banana is stickered. The prompt rules 3 out, which means the consensus over-counts a specific position rather than the count being arbitrarily off. The position most consistent with being silently absorbed by such a generic sweep is the middle one — correcting this specific failure mode, not eliminating from a closed answer set, yields 2. ... Answer: 2.
+Every listed attempt reports 3 and justifies it the same way — "each banana in the bunch has a sticker" — without ever saying which banana carries which. That shared move is the error: they assume the bunch is uniform instead of checking bananas one at a time. Doing that check, the top banana has a sticker and the lower one does, the middle is bare, and there is a fourth banana at the side that none of the attempts mentions at all. Two stickers. ... Answer: 2.
 </think>
 
 \\boxed{2}   ✓`
     },
-    caption: 'BCQ contrasts a uniform “each of three” claim against a per-position decomposition (top/bottom stickered, middle/side bare); NCQ names which position the consensus is silently over-counting and corrects that specific failure mode.'
-  },
-  {
-    id: 'coat',
-    scale: '2B',
-    domain: 'Scene QA (MCQ)',
-    img: 'assets/qualitative/coat_0.png',
-    question: 'What\'s attached to the coat?  A. belt   B. button   C. pocket   D. rope',
-    ref: 'D (rope)',
-    studentWrong: 'Plain rollouts: 0 / 8 correct  ·  6 × C (pocket flap), 2 × B (button)',
-    bcq: {
-      verdict: 'ok',
-      text: `<think>
-Anonymized, Candidate A reads small circular shapes as buttons — a generic feature with no count or location — while Candidate B names a singular feature with a specific texture (braiding), colour (white), and configuration (a knot at the chest). A specific, harder-to-fabricate commitment outranks a generic reading on reasoning quality alone. ... Answer: D (rope).
-</think>
-
-\\boxed{D}   ✓`
-    },
-    ncq: {
-      verdict: 'ok',
-      text: `<think>
-The prompt rules out B (button) and C (pocket); A (belt) and D (rope) remain. The decision between the two is not by exclusion alone: a belt is a long horizontal strap running across the waist, whereas the listed wrong candidates' own descriptions consistently localise the attachment at the chest with a knot-like configuration. The remaining option that matches this named configuration is rope. ... Answer: D (rope).
-</think>
-
-\\boxed{D}   ✓`
-    },
-    caption: 'BCQ contrasts a generic “buttons” misread against a positionally-named braided cord; NCQ rules out both wrong answer modes (B and C) and matches the chest-knot configuration the listed traces themselves describe to the remaining option D.'
+    caption: 'BCQ sets a uniform “a sticker on each of three” claim against a per-position reading, and the student checks the premise the two candidates actually disagree on — the bunch has a fourth banana at the side. NCQ names the shared move behind the consensus (assuming the bunch is uniform instead of checking one banana at a time) and corrects it with no teacher trace in the prompt.'
   },
   {
     id: 'books',
@@ -695,7 +650,7 @@ The prompt rules out B (button) and C (pocket); A (belt) and D (rope) remain. Th
     bcq: {
       verdict: 'ok',
       text: `<think>
-Anonymized side by side, Candidate A reports three spines without further structure, while Candidate B commits to an explicit colour sequence (White, Dark, White, Dark). The four-element alternation is a structural commitment: if only three spines existed, the sequence would not balance. I commit to Candidate B because its reasoning survives this internal consistency check, not because of any label. ... Answer: 4.
+Candidate A gives a bare count of three and never says which shelf it counted. Candidate B locates the shelf — the one below the shelf holding white spheres — assigns a colour to each spine from left to right, and accounts for the other shelves as holding objects rather than books. Reading the shelf Candidate B points to, I can separate a light spine, then a dark one, then a light one, then a dark one at the right edge, which is the one a quick sweep would merge into its neighbour. ... Answer: 4.
 </think>
 
 \\boxed{4}   ✓`
@@ -703,38 +658,38 @@ Anonymized side by side, Candidate A reports three spines without further struct
     ncq: {
       verdict: 'ok',
       text: `<think>
-All eight listed candidates report 3 with the same "row of three" justification, and none mentions a colour or position pattern. The consensus failure mode is therefore collapsing two adjacent spines into a single one, consistent with the absence of any colour-by-colour decomposition in the listed traces. Correcting this off-by-one error yields 4 — arrived at by naming the failure mode, not by exclusion from a closed answer set. ... Answer: 4.
+Every listed attempt stops at three and describes the shelf the same way, as a row of thin vertical items, without separating one spine from the next by colour or by edge. That is where the count goes wrong: two adjacent spines of similar width read as a single item unless they are told apart. Going along that shelf and alternating light and dark, a fourth spine separates out at the right edge. ... Answer: 4.
 </think>
 
 \\boxed{4}   ✓`
     },
-    caption: 'A 4B student fails on every plain rollout (all answer 3); BCQ leans on an internal consistency check of the alternating White/Dark/White/Dark sequence, while NCQ names the “collapse two adjacent spines into one” failure mode and corrects it without access to the teacher.'
+    caption: 'A 4B student fails on every plain rollout (all answer 3). BCQ answers the question the undercounting trace never does — which shelf was counted — and reads it spine by spine as White, Dark, White, Dark. NCQ, with no teacher trace, names why the sweep undercounts (two adjacent spines of similar width merge unless told apart) and separates the fourth at the right edge.'
   },
   {
-    id: 'airplane',
-    scale: '9B',
-    domain: 'Chart Reading',
-    img: 'assets/qualitative/airplane_0.png',
-    question: 'The graph shows the relationship between the distance an airplane has covered (y-axis, miles) and the time it has been flying (x-axis, hours). What is the speed of the airplane in miles per hour?',
-    ref: '500',
-    studentWrong: 'Plain rollouts: 0 / 8 correct (all answer 400 — misreading the line at x=1 as y=400 rather than y=500)',
+    id: 'coat',
+    scale: '2B',
+    domain: 'Scene QA (MCQ)',
+    img: 'assets/qualitative/coat_0.png',
+    question: 'What\'s attached to the coat?  A. belt   B. button   C. pocket   D. rope',
+    ref: 'D (rope)',
+    studentWrong: 'Plain rollouts: 0 / 8 correct  ·  6 × C (pocket flap), 2 × B (button)',
     bcq: {
       verdict: 'ok',
       text: `<think>
-Both candidates assert specific grid readings, so the choice cannot be made by length or order. Candidate A's endpoint (4, 1600) would leave the line two labelled rows below the top of the y-axis. Candidate B's chain (2, 1000) and (4, 2000) lies on exact labelled intersections, with (4, 2000) coinciding with the arrowhead's terminating position. Only Candidate B's chain is consistent on falsifiability grounds. ... Answer: 500.
+Candidate A reads small circular shapes near the neckline as buttons, which a coat of this style would have regardless. Candidate B points at one object and gives it a texture (braided), a colour (white), and a position (knotted at chest level). Looking at that position, the white braided cord is what stands out against the yellow, and it is not a belt, a pocket, or a button. ... Answer: D (rope).
 </think>
 
-\\boxed{500}   ✓`
+\\boxed{D}   ✓`
     },
     ncq: {
       verdict: 'ok',
       text: `<think>
-All listed candidates commit to slope 400 via (1, 400), (2, 800), (4, 1600). The answer is open-ended numeric, so elimination from a closed set is unavailable — I have to re-derive. Re-anchoring on two exact-intersection points — (2, 1000) and the arrowhead terminating near (4, 2000) — gives slope 500. The consensus failed by snapping the unlabelled y=500 at x=1 down to the labelled 400-row. ... Answer: 500.
+The prompt rules out B (button) and C (pocket), leaving A (belt) and D (rope). A belt would be a long strap running horizontally across the waist. Every listed attempt instead places the attachment high on the front of the coat, near the neckline and chest — they disagree about what it is and agree about where it is. The white object at that position is a braided cord tied on itself, which is a rope rather than a belt. ... Answer: D (rope).
 </think>
 
-\\boxed{500}   ✓`
+\\boxed{D}   ✓`
     },
-    caption: 'A 9B student plain-fails by down-snapping the unlabelled y=500 at x=1 to the labelled 400-row. BCQ contrasts that 400-row chain against one anchored on exact-intersection grid points and the arrowhead’s terminating position; NCQ, even without the teacher trace, re-derives 500 by positional grounding — elimination is unavailable on an open-ended numeric answer space.'
+    caption: 'The one example where elimination does part of the work — and it is not enough on its own. BCQ sets a generic “buttons” misread against a braided cord named by texture, colour, and position. NCQ rules out both of the student’s wrong modes (B and C), but A and D still remain: the rollout separates them by noticing that the listed traces disagree about what the attachment is and agree about where it is.'
   }
 ];
 
