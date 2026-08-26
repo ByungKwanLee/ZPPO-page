@@ -624,7 +624,7 @@ const QUAL = [
     bcq: {
       verdict: 'ok',
       text: `<think>
-The two candidates disagree about the bunch before they disagree about the count. Candidate A treats it as three bananas and asserts a sticker on each; Candidate B enumerates four — top, middle, bottom, and one at the side — and puts stickers on only two of them. Going back to the image, the fourth banana Candidate B refers to is there, so Candidate A's premise is already wrong, and the per-position reading is the one I can check: top and bottom stickered, middle and side bare. ... Answer: 2.
+The two candidates disagree about the bunch before they disagree about the count. Candidate 1 treats it as three bananas and asserts a sticker on each; Candidate 2 enumerates four — top, middle, bottom, and one at the side — and puts stickers on only two of them. Going back to the image, the fourth banana Candidate 2 refers to is there, so Candidate 1's premise is already wrong, and the per-position reading is the one I can check: top and bottom stickered, middle and side bare. ... Answer: 2.
 </think>
 
 \\boxed{2}   ✓`
@@ -640,32 +640,6 @@ Every listed attempt reports 3 and justifies it the same way — "each banana in
     caption: 'BCQ sets a uniform “a sticker on each of three” claim against a per-position reading, and the student checks the premise the two candidates actually disagree on — the bunch has a fourth banana at the side. NCQ names the shared move behind the consensus (assuming the bunch is uniform instead of checking one banana at a time) and corrects it with no teacher trace in the prompt.'
   },
   {
-    id: 'books',
-    scale: '4B',
-    domain: 'Visual Counting',
-    img: 'assets/qualitative/books_0.png',
-    question: 'How many books are standing upright on the bookshelf next to the floor lamp on the right?',
-    ref: '4',
-    studentWrong: 'Plain rollouts: 0 / 8 correct (all answer 3 — undercount one spine in the alternating sequence)',
-    bcq: {
-      verdict: 'ok',
-      text: `<think>
-Candidate A gives a bare count of three and never says which shelf it counted. Candidate B locates the shelf — the one below the shelf holding white spheres — assigns a colour to each spine from left to right, and accounts for the other shelves as holding objects rather than books. Reading the shelf Candidate B points to, I can separate a light spine, then a dark one, then a light one, then a dark one at the right edge, which is the one a quick sweep would merge into its neighbour. ... Answer: 4.
-</think>
-
-\\boxed{4}   ✓`
-    },
-    ncq: {
-      verdict: 'ok',
-      text: `<think>
-Every listed attempt stops at three and describes the shelf the same way, as a row of thin vertical items, without separating one spine from the next by colour or by edge. That is where the count goes wrong: two adjacent spines of similar width read as a single item unless they are told apart. Going along that shelf and alternating light and dark, a fourth spine separates out at the right edge. ... Answer: 4.
-</think>
-
-\\boxed{4}   ✓`
-    },
-    caption: 'A 4B student fails on every plain rollout (all answer 3). BCQ answers the question the undercounting trace never does — which shelf was counted — and reads it spine by spine as White, Dark, White, Dark. NCQ, with no teacher trace, names why the sweep undercounts (two adjacent spines of similar width merge unless told apart) and separates the fourth at the right edge.'
-  },
-  {
     id: 'coat',
     scale: '2B',
     domain: 'Scene QA (MCQ)',
@@ -676,7 +650,7 @@ Every listed attempt stops at three and describes the shelf the same way, as a r
     bcq: {
       verdict: 'ok',
       text: `<think>
-Candidate A reads small circular shapes near the neckline as buttons, which a coat of this style would have regardless. Candidate B points at one object and gives it a texture (braided), a colour (white), and a position (knotted at chest level). Looking at that position, the white braided cord is what stands out against the yellow, and it is not a belt, a pocket, or a button. ... Answer: D (rope).
+Candidate 1 reads small circular shapes near the neckline as buttons, which a coat of this style would have regardless. Candidate 2 points at one object and gives it a texture (braided), a colour (white), and a position (knotted at chest level). Looking at that position, the white braided cord is what stands out against the yellow, and it is not a belt, a pocket, or a button. ... Answer: D (rope).
 </think>
 
 \\boxed{D}   ✓`

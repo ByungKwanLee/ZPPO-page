@@ -3042,6 +3042,24 @@ html[data-theme="light"] .dh__qtext {
 }
 html[data-theme="light"] .dh__instr code { color: #b9701a; background: rgba(240, 163, 90, 0.16); }
 .dh__instr strong { color: var(--fg); font-weight: 700; }
+/* The deduplicated wrong-answer list the NCQ template names before the traces.
+   Shares the wrong-candidate palette so it reads as part of the negative set. */
+.dh__ans {
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 0.88em;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #ff7a7a;
+  background: rgba(255, 95, 95, 0.12);
+  border: 1px solid rgba(255, 95, 95, 0.40);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+html[data-theme="light"] .dh__ans {
+  color: #c3243a;
+  background: rgba(195, 36, 58, 0.10);
+  border-color: rgba(195, 36, 58, 0.40);
+}
 .dh__cands { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; }
 .dh__cand {
   position: relative;
@@ -3920,6 +3938,7 @@ html[data-theme="light"] .qual__media img { background: #f0f4e8; }
   .dh__card--ncq .dh__cands { grid-template-columns: minmax(0, 1fr); }
   .dh__cand { min-width: 0; }
   .dh__cand-ph { white-space: normal; overflow-wrap: anywhere; }
+  .dh__ans { white-space: normal; overflow-wrap: anywhere; }
 }
 
 /* Very narrow phones: tighten the badge tracking so even the longest labels
